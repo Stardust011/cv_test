@@ -28,41 +28,51 @@ using namespace cv;
 #define IMAGEWIDTH 3264
 #define IMAGEHEIGHT 2448
 
-void VideoPlayer(Mat &image_out) ;
+void VideoPlayer(Mat &image_out);
 
 class V4L2Capture {
 public:
-	V4L2Capture(char *devName, int width, int height);
-	virtual ~V4L2Capture();
+    V4L2Capture(char *devName, int width, int height);
 
-	int openDevice();
-	int closeDevice();
-	int initDevice();
-	int startCapture();
-	int stopCapture();
-	int freeBuffers();
-	int getFrame(void **,size_t *);
-	int backFrame();
-	static void test();
+    virtual ~V4L2Capture();
+
+    int openDevice();
+
+    int closeDevice();
+
+    int initDevice();
+
+    int startCapture();
+
+    int stopCapture();
+
+    int freeBuffers();
+
+    int getFrame(void **, size_t *);
+
+    int backFrame();
+
+    static void test();
 
 private:
-	int initBuffers();
+    int initBuffers();
 
-	struct cam_buffer
-	{
-		void* start;
-		unsigned int length;
-	};
-	char *devName;
-	int capW;
-	int capH;
-	int fd_cam;
-	cam_buffer *buffers;
-	unsigned int n_buffers;
-	int frameIndex;
+    struct cam_buffer {
+        void *start;
+        unsigned int length;
+    };
+    char *devName;
+    int capW;
+    int capH;
+    int fd_cam;
+    cam_buffer *buffers;
+    unsigned int n_buffers;
+    int frameIndex;
 };
-V4L2Capture * set_v4l(char * video_path = "/dev/video0");
-Mat VideoCapture_v4l(V4L2Capture * vcap);
+
+V4L2Capture *set_v4l(char *video_path = "/dev/video0");
+
+Mat VideoCapture_v4l(V4L2Capture *vcap);
 
 
 #endif/*_OPENCV_V4L2_H*/

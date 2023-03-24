@@ -76,12 +76,12 @@ double pnp_Get_Distance_armour(Rect &roi) {
     const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
 
 
-    vector <Point3f> realistic;
+    vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
     realistic.push_back(cv::Point3f(0, 0.140, 0));
     realistic.push_back(cv::Point3f(0.06, 0.140, 0));
     realistic.push_back(cv::Point3f(0.06, 0, 0));
-    vector <Point2f> point_get;
+    vector<Point2f> point_get;
     point_get.push_back(Point2f(roi.x, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y + roi.height));
@@ -101,12 +101,12 @@ double pnp_Get_Distance_buf(Rect &roi) {
     Mat rotationMatrix, tvec;;
     const static Mat cameraMatrix = (Mat_<double>(3, 3) << 780.461, 0, 224.3668, 0, 781.158, 233.955, 0, 0, 1);
     const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
-    vector <Point3f> realistic;
+    vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
     realistic.push_back(cv::Point3f(0, 0.3, 0));
     realistic.push_back(cv::Point3f(0.2, 0.3, 0));
     realistic.push_back(cv::Point3f(0.2, 0, 0));
-    vector <Point2f> point_get;
+    vector<Point2f> point_get;
     point_get.push_back(Point2f(roi.x, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y + roi.height));
@@ -277,7 +277,7 @@ Mat armour::YUV_to_gray(const Mat &src_image_param, int Mode, int Cb_min = 0, in
                         int Cr_max = 255, int Y_min = 0, int Y_max = 255) {
     Mat src_image;
     cvtColor(src_image_param, src_image, COLOR_BGR2YCrCb);
-    vector <Mat> src_channels;
+    vector<Mat> src_channels;
     split(src_image, src_channels);
     Mat image_Cb = src_channels.at(2);
     Mat image_Cr = src_channels.at(1);
@@ -331,7 +331,7 @@ Mat armour::YUV_to_gray(const Mat &src_image_param, int Mode, int Cb_min = 0, in
 Mat armour::rgb_to_gray(const Mat &src_image, int Mode, int R_min = 0, int R_max = 255, int G_min = 0, int G_max = 255,
                         int B_min = 0, int B_max = 255) {
 
-    vector <Mat> src_channels;
+    vector<Mat> src_channels;
     split(src_image, src_channels);
     Mat image_red = src_channels.at(2);
     Mat image_green = src_channels.at(1);
@@ -394,12 +394,12 @@ Mat armour::dilate_pic(const Mat &src_image, int size_element = 3) {
     return dst_image;
 }
 
-vector <vector<Point>> armour::get_point_contours(const Mat &src_image)//3
+vector<vector<Point>> armour::get_point_contours(const Mat &src_image)//3
 {
-    vector <vector<Point>> contour_vector;
-    vector <Vec4i> contour_hierachy;
+    vector<vector<Point>> contour_vector;
+    vector<Vec4i> contour_hierachy;
     cout << "hello1 " << endl;
-    findContours(src_image, contour_vector, contour_hierachy, RETR_CCOMP , CHAIN_APPROX_TC89_L1);
+    findContours(src_image, contour_vector, contour_hierachy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
     cout << "hello2" << endl;
     //cout << "contour_vector size:" << contour_vector.size() << endl;
     return contour_vector;
@@ -432,8 +432,8 @@ bool armour::judge_satisfy(const Mat &Roi) {
  * */
 
 
-void armour::get_rect_pic_contour(Mat gray_image, const vector <vector<Point>> &contour_vector,
-                                  vector <vector<Point>> &contour_rect)//4
+void armour::get_rect_pic_contour(Mat gray_image, const vector<vector<Point>> &contour_vector,
+                                  vector<vector<Point>> &contour_rect)//4
 {
     //cout << "enter get_rect_pic_contour func" << endl;
     for (int num = 0; num < contour_vector.size(); num++) {
@@ -456,7 +456,7 @@ void armour::get_rect_pic_contour(Mat gray_image, const vector <vector<Point>> &
  * 说明:
  * */
 
-vector<double> armour::get_rotate_angle(const vector <vector<Point>> &rotate_rect) {
+vector<double> armour::get_rotate_angle(const vector<vector<Point>> &rotate_rect) {
     vector<double> theata_vector;
     for (int num = 0; num < rotate_rect.size(); num++) {
         int flags = 0;
@@ -470,7 +470,7 @@ vector<double> armour::get_rotate_angle(const vector <vector<Point>> &rotate_rec
     return theata_vector;
 }
 
-vector<double> armour::get_rotate_angle(Mat &src_image, const vector <vector<Point>> &rotate_rect) {
+vector<double> armour::get_rotate_angle(Mat &src_image, const vector<vector<Point>> &rotate_rect) {
     vector<double> theata_vector;
     for (int num = 0; num < rotate_rect.size(); num++) {
         int flags = 0;
@@ -531,9 +531,9 @@ vector<double> armour::get_rotate_angle(Mat &src_image, const vector <vector<Poi
  * 		该函数中不存在筛选函数调用
  * */
 
-vector <Scalar> armour::cal_distance_theata(const vector<double> &theata_vector) {
+vector<Scalar> armour::cal_distance_theata(const vector<double> &theata_vector) {
     //cout << "enter cal_distance_theata function" << endl;
-    vector <Scalar> tmp_Scalar_vector;
+    vector<Scalar> tmp_Scalar_vector;
     if (theata_vector.size() == 0 || theata_vector.size() == 1)//如果发现角度容器中存放的只有一个轮廓的角度,那么这时候返回一空容器
     {
         return tmp_Scalar_vector;
@@ -561,10 +561,10 @@ vector <Scalar> armour::cal_distance_theata(const vector<double> &theata_vector)
  * 		该函数中不存在筛选函数调用
  * */
 
-vector <Scalar> armour::judge_the_theata(const vector <Scalar> &angle_Scalar, double max_angle = 20) {
+vector<Scalar> armour::judge_the_theata(const vector<Scalar> &angle_Scalar, double max_angle = 20) {
     //cout << "enter judge the theata func" << endl;
     //cout << "angle_Scalar size is: " << angle_Scalar.size() << endl;
-    vector <Scalar> tmp_vector_angle;
+    vector<Scalar> tmp_vector_angle;
     for (int num = 0; num < angle_Scalar.size(); num++) {
         cout << "angle is : " << angle_Scalar[num].val[0] << endl;
         if (angle_Scalar[num].val[0] > max_angle) continue;
@@ -582,12 +582,12 @@ vector <Scalar> armour::judge_the_theata(const vector <Scalar> &angle_Scalar, do
  * 说明:
  * */
 
-void armour::set_the_rect(const Mat &gray_image, const vector <Scalar> &place_info,
-                          const vector <vector<Point>> &contour_point_vector, vector <Rect> &armour_place_info,
+void armour::set_the_rect(const Mat &gray_image, const vector<Scalar> &place_info,
+                          const vector<vector<Point>> &contour_point_vector, vector<Rect> &armour_place_info,
                           int pic_max_rows = 480, int pic_max_cols = 640) {
     //double debug_time = get_sys_time();
     for (register int num = 0; num < place_info.size(); num++) {
-        vector <Point> tmp_armour;
+        vector<Point> tmp_armour;
         register int out_side = (int) place_info[num].val[1];
         register int in_side = (int) place_info[num].val[2];//
         /*Rect tmp_a_rect, tmp_b_rect;
@@ -618,7 +618,7 @@ void armour::set_the_rect(const Mat &gray_image, const vector <Scalar> &place_in
 }
 
 bool
-armour::judge_y_axis(const vector <Point> &point_A_vector, const vector <Point> &point_B_vector, int size_y = 480) {
+armour::judge_y_axis(const vector<Point> &point_A_vector, const vector<Point> &point_B_vector, int size_y = 480) {
     register int A_y_min = size_y;
     register int A_y_max = 0;
     register int B_y_min = size_y;
@@ -684,7 +684,7 @@ bool armour::judge_y_axis(Mat src_image, const Rect &A_rect, const Rect &B_rect)
  * */
 
 
-bool armour::judge_two_sides(const vector <Point> &point_A_vector, const vector <Point> &point_B_vector) {
+bool armour::judge_two_sides(const vector<Point> &point_A_vector, const vector<Point> &point_B_vector) {
     register double a_max_distance = 0;
     register double b_max_distance = 0;
     register double tmp_distance;
@@ -725,7 +725,7 @@ bool armour::judge_two_sides(const vector <Point> &point_A_vector, const vector 
     return true;
 }
 
-Rect armour::cal_the_rect_by_point(const vector <Point> &point_vector, int init_rows = 480, int init_cols = 640) {
+Rect armour::cal_the_rect_by_point(const vector<Point> &point_vector, int init_rows = 480, int init_cols = 640) {
     register int min_x = init_cols, min_y = init_rows;
     register int max_x = 0, max_y = init_rows = 0;
 
@@ -765,13 +765,13 @@ bool judge_rect_satisfy(const Rect &Roi) {
 
 }
 
-vector <vector<Point>>
-armour::judge_the_min_distance(const Mat &gray_image, const vector <vector<Point>> &vector_point, double max_value = 25,
+vector<vector<Point>>
+armour::judge_the_min_distance(const Mat &gray_image, const vector<vector<Point>> &vector_point, double max_value = 25,
                                double min_value = 4.1) {
     register double min_distance = DBL_MAX;
     register double current_distance;
     //cout << "min_distance:" << min_distance << endl;
-    vector <vector<Point>> select_vector_point;
+    vector<vector<Point>> select_vector_point;
     for (register int obj_num = 0; obj_num < vector_point.size(); obj_num++) {
         /*for (register int rows = 0; rows < vector_point[obj_num].size() - 1; rows++)
             {
@@ -800,7 +800,7 @@ armour::judge_the_min_distance(const Mat &gray_image, const vector <vector<Point
     return select_vector_point;
 }
 
-vector <Rect> armour::bubble_sort(vector<double> distance, vector <Rect> distance_Rect) {
+vector<Rect> armour::bubble_sort(vector<double> distance, vector<Rect> distance_Rect) {
     Rect tmp_Rect;
     register int tmp_index;
     if (!distance.size())
@@ -821,9 +821,9 @@ vector <Rect> armour::bubble_sort(vector<double> distance, vector <Rect> distanc
 }
 
 
-Mat armour::rect_the_pic(const Mat &gray_image, Mat &src_image, vector <Rect> &rect_vector) {
+Mat armour::rect_the_pic(const Mat &gray_image, Mat &src_image, vector<Rect> &rect_vector) {
     Mat dst_image;
-    vector <Rect> rect_vector_tmp;
+    vector<Rect> rect_vector_tmp;
     src_image.copyTo(dst_image);
     rect_vector = judge_contour(gray_image, rect_vector);
     for (register int obj_num = 0; obj_num < rect_vector.size(); obj_num++) {
@@ -839,7 +839,7 @@ Mat armour::rect_the_pic(const Mat &gray_image, Mat &src_image, vector <Rect> &r
     return dst_image;
 }
 
-double armour::get_max_area(vector <Rect> rect_vector) {
+double armour::get_max_area(vector<Rect> rect_vector) {
     //Rect tmp_rect;
     register double max_area;
     if (!rect_vector.size())
@@ -853,7 +853,7 @@ double armour::get_max_area(vector <Rect> rect_vector) {
     return max_area;
 }
 
-Point armour::select_the_rect_area(Mat &src_image, const vector <Rect> &vector_rect) {
+Point armour::select_the_rect_area(Mat &src_image, const vector<Rect> &vector_rect) {
     register int index_obj = 0;
     register double max_area = 0;
     if (vector_rect.size() == 0)return ERROR_POINT;
@@ -878,11 +878,11 @@ Point armour::select_the_rect_area(Mat &src_image, const vector <Rect> &vector_r
  * 说明:
  * */
 
-vector <Rect> armour::sort_area(const vector <Rect> &rect_vector) {
+vector<Rect> armour::sort_area(const vector<Rect> &rect_vector) {
     double max_area = 0;
     double min_area = DBL_MAX;
     double area_count = 0;
-    vector <Rect> tmp_sorted_area;
+    vector<Rect> tmp_sorted_area;
     for (int obj_num = 0; obj_num < rect_vector.size(); obj_num++) {
         if (rect_vector[obj_num].area() > max_area)
             max_area = rect_vector[obj_num].area();
@@ -897,20 +897,20 @@ vector <Rect> armour::sort_area(const vector <Rect> &rect_vector) {
     return tmp_sorted_area;
 }
 
-void armour::push_back_none_vector(vector <vector<Rect>> &rect_vector, int size) {
+void armour::push_back_none_vector(vector<vector<Rect>> &rect_vector, int size) {
     for (int obj_num = 0; obj_num < size; obj_num++) {
-        vector <Rect> tmp_rect_vector;
+        vector<Rect> tmp_rect_vector;
         rect_vector.push_back(tmp_rect_vector);
     }
     return;
 }
 
-vector <Rect> armour::get_the_distance_vector(const vector <Rect> &vector_rect) {
+vector<Rect> armour::get_the_distance_vector(const vector<Rect> &vector_rect) {
     vector<double> distance_tmp;
     for (int obj_num = 0; obj_num < vector_rect.size(); obj_num++) {
         distance_tmp.push_back(CalculateZ(0, vector_rect[obj_num].height, real_distance_height, focus_global));
     }
-    vector <vector<Rect>> distance_vector;
+    vector<vector<Rect>> distance_vector;
     push_back_none_vector(distance_vector, 6);
     for (int obj_num = 0; obj_num < distance_tmp.size(); obj_num++) {
         if (distance_tmp[obj_num] < 12)
@@ -971,7 +971,7 @@ vector <Rect> armour::get_the_distance_vector(const vector <Rect> &vector_rect) 
 	return tmp_none_rect;
 }*/
 
-Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect) {
+Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect) {
     double min_distance;
     static Rect prev_rect;
     //cout << "debug_size:" << vector_rect.size() << endl;
@@ -980,7 +980,7 @@ Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect) {
     register int tmp_index = 0;
     register Point tmp_point = ERROR_POINT;
     vector_rect = get_the_distance_vector(vector_rect);
-    vector <Rect> proper_rect;
+    vector<Rect> proper_rect;
     register double height_width_proportion;
     if (vector_rect.size() == 0) return tmp_point;
     //vector_rect = sort_area(vector_rect);
@@ -1088,7 +1088,7 @@ Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect) {
     }
     register int min_index;
     register double min_area;
-    vector <Rect> sort_rect = bubble_sort(distance, vector_rect);
+    vector<Rect> sort_rect = bubble_sort(distance, vector_rect);
     min_area = sort_rect[0].area();
     double max_area_tmp = get_max_area(sort_rect);
     //cout << "max_area:" << max_area_tmp << endl;
@@ -1139,7 +1139,7 @@ Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect) {
     //return prev_point;
 }
 
-Point armour::select_the_rect_rotate(Mat &src_image, vector <Rect> &vector_rect, int &armour_area, Rect &select_rect) {
+Point armour::select_the_rect_rotate(Mat &src_image, vector<Rect> &vector_rect, int &armour_area, Rect &select_rect) {
     static int flags_count = 0;
     int length_vector = vector_rect.size();
     if (length_vector == 0) return ERROR_POINT;
@@ -1171,7 +1171,7 @@ Point armour::select_the_rect_rotate(Mat &src_image, vector <Rect> &vector_rect,
     return return_point;
 }
 
-Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect, int &return_area, Rect &return_rect) {
+Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect, int &return_area, Rect &return_rect) {
     double min_distance;
     static Rect prev_rect;
     //cout << "debug_size:" << vector_rect.size() << endl;
@@ -1180,7 +1180,7 @@ Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect, int &r
     register int tmp_index = 0;
     register Point tmp_point = ERROR_POINT;
     //vector_rect = get_the_distance_vector(vector_rect);
-    vector <Rect> proper_rect;
+    vector<Rect> proper_rect;
     register double height_width_proportion;
     //cout << "prev_rect  -> width :" << prev_rect.width << "height : "<< prev_rect.height << endl;
     static int no_target = 0;
@@ -1320,7 +1320,7 @@ Point armour::select_the_rect(Mat &src_image, vector <Rect> &vector_rect, int &r
     }
     register int min_index;
     register double min_area;
-    vector <Rect> sort_rect = bubble_sort(distance, vector_rect);
+    vector<Rect> sort_rect = bubble_sort(distance, vector_rect);
     min_area = sort_rect[0].area();
     double max_area_tmp = get_max_area(sort_rect);
     //cout << "max_area:" << max_area_tmp << endl;
@@ -1400,7 +1400,7 @@ string armour::change_int_into_path_jpg(string folder, int num) {
 }
 
 int armour::return_the_exsit_num(string folder) {
-    vector <String> file_names;
+    vector<String> file_names;
     glob(folder, file_names);
     return file_names.size();
 }
@@ -1446,7 +1446,7 @@ static void *get_fram_thread_1(void *arg) {
         cout << "can't get the fram thread" << endl;
         exit(-1);
     }
-    vector <Mat> pic_array_thread;
+    vector<Mat> pic_array_thread;
     int thread_flags = 0;
     while (1) {
         if (true == process_finish && thread_flags != 0) {
@@ -1529,20 +1529,18 @@ static void *get_fram_thread_1(void *arg) {
 
 static void *get_fram_thread(void *arg) {
     Mat *src_image = (Mat *) arg;
-    vector <Mat> pic_array_thread;
+    vector<Mat> pic_array_thread;
 
     int serial_camera = get_usb_camara_serial(BIG_OR_SMALL);
-    V4L2DeviceParameters param("/dev/video0", V4L2_PIX_FMT_MJPEG , IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
-    if (serial_camera == 0){
+    V4L2DeviceParameters param("/dev/video0", V4L2_PIX_FMT_MJPEG, IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
+    if (serial_camera == 0) {
 //        cap_thread = set_v4l("/dev/video0");
-    }
-    else if (serial_camera == 1) {
+    } else if (serial_camera == 1) {
         param.m_devName = "/dev/video1";
+    } else {
     }
-    else {
-    }
-        V4l2Capture* cap_thread = V4l2Capture::create(param);
-        //TODO 需要经过验证
+    V4l2Capture *cap_thread = V4l2Capture::create(param);
+    //TODO 需要经过验证
     int thread_flags = 0;
     while (1) {
         if (true == process_finish && thread_flags != 0) {
@@ -1559,7 +1557,7 @@ static void *get_fram_thread(void *arg) {
             Mat fram;
             timeval timeout{};
             bool isReadable = cap_thread->isReadable(&timeout);
-            if (!isReadable){
+            if (!isReadable) {
                 cout << "Is not Readable" << endl;
             }
             isReadable = cap_thread->read(fram);
@@ -1772,7 +1770,7 @@ int main() {
     return 0;
 }
 
-vector <Rect> armour::judge_contour(Mat src_image, const vector <Rect> &rect_vector) {
+vector<Rect> armour::judge_contour(Mat src_image, const vector<Rect> &rect_vector) {
     int circle_num = 0;
     vector<int> contour_num_vector;
     int count_contour = 0;
@@ -1793,8 +1791,8 @@ vector <Rect> armour::judge_contour(Mat src_image, const vector <Rect> &rect_vec
             continue;
         }
         Mat ROI_pic = src_image(rect_vector[obj_num]);
-        vector <vector<Point>> contour_vector;
-        vector <Vec4i> contour_hierachy;
+        vector<vector<Point>> contour_vector;
+        vector<Vec4i> contour_hierachy;
         cout << "hello" << endl;
         findContours(ROI_pic, contour_vector, contour_hierachy, RETR_EXTERNAL, CHAIN_APPROX_TC89_L1);
         //CV_LINK_RUNS may can be used in cv4
@@ -1818,7 +1816,7 @@ vector <Rect> armour::judge_contour(Mat src_image, const vector <Rect> &rect_vec
     double stddev = sqrt(tmp_stddev/(contour_num_vector.size()));
     double normal = stddev + ave;
     //if(contour_vector.size() > 4) return false;*/
-    vector <Rect> dst_vector_rect;
+    vector<Rect> dst_vector_rect;
     for (int obj_num = 0; obj_num < contour_num_vector.size(); obj_num++) {
         if (contour_num_vector[obj_num] <= 1.0 * ave) {
             cout << "obj_num : " << obj_num << "rect_vector.size()" << rect_vector.size() << endl;
@@ -1894,14 +1892,14 @@ Rect armour::get_new_roi_rect(bool flags) {
     return roi_rect;
 }
 
-void armour::resize_Point(Rect normal_rect, vector <Rect> &point_rect) {
+void armour::resize_Point(Rect normal_rect, vector<Rect> &point_rect) {
     for (int obj_num = 0; obj_num < point_rect.size(); obj_num++) {
         point_rect[obj_num] = Rect(point_rect[obj_num].x + normal_rect.x, point_rect[obj_num].y + normal_rect.y,
                                    point_rect[obj_num].width, point_rect[obj_num].height);
     }
 }
 
-void create_test_vector(vector <Point> &test) {
+void create_test_vector(vector<Point> &test) {
     for (int obj_num = 0; obj_num < 3; obj_num++) {
         test.push_back(Point(320, 240));
     }
@@ -1945,7 +1943,7 @@ void armour::fire(Mat &src_image) {
     //writer.open(video_full_path,CV_FOURCC('M','J','P','G'),40,Size(640,480),true);
     //file_stream.open("./record.txt",ios::out);
     vector<double> angle_vector;
-    vector <Point> test;
+    vector<Point> test;
     Rect Roi_rect;
     //while (MOD_B_R != 3)
     {
@@ -1965,18 +1963,18 @@ void armour::fire(Mat &src_image) {
             gray_image = dilate_pic(gray_image, 12);
         //display("gray", gray_image);
 
-        vector <vector<Point>> vector_Point;
+        vector<vector<Point>> vector_Point;
         get_rect_pic_contour(gray_image, get_point_contours(gray_image), vector_Point);
         //vector_Point = judge_the_min_distance(gray_image,vector_Point);
         //cout << "vector_point size:" << vector_Point.size() << endl;
         vector<double> angle_vector;
 
         angle_vector = get_rotate_angle(src_image, vector_Point);
-        vector <Scalar> place_info_vector;
+        vector<Scalar> place_info_vector;
         place_info_vector = judge_the_theata(cal_distance_theata(angle_vector), 3);
 
 
-        vector <Rect> Rect_vector;
+        vector<Rect> Rect_vector;
         set_the_rect(gray_image, place_info_vector, vector_Point, Rect_vector, src_image.rows, src_image.cols);
         int armour_area;
         Mat result_pic = rect_the_pic(gray_image, src_image, Rect_vector);

@@ -12,14 +12,21 @@
 #include <errno.h>
 #include <iostream>
 #include "new_uart_thread_init.h"
+
 using namespace std;
 
 extern int CMD_COLOR;
+
 int gpio158_open();
+
 void gpio158_write_on(int file_describe);
+
 void gpio158_write_off(int file_describe);
+
 void gpio158_close(int file_describe);
+
 void led_red(int file_describe);
+
 void led_blue(int file_describe);
 //static void * led_on_thread(void * arg);
 

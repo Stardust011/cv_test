@@ -63,8 +63,7 @@
 2.6.28. V4L2_PIX_FMT_NV24 (‘NV24’), V4L2_PIX_FMT_NV42 (‘NV42’)
 2.6.29. V4L2_PIX_FMT_M420 (‘M420’)
 */
-struct V4L2DeviceParameters 
-{   /**
+struct V4L2DeviceParameters {   /**
      * @brief V4L2DeviceParameters
      * @param devname 设备名，如输入"/dev/video0"
      * @param formatList 多个图像帧格式
@@ -75,8 +74,12 @@ struct V4L2DeviceParameters
      * @param verbose
      * @param openFlags
      */
-    V4L2DeviceParameters(const char* devname, const std::list<unsigned int> & formatList, unsigned int width, unsigned int height, int fps,unsigned int input_index = 0, int verbose = 0, int openFlags = O_RDWR | O_NONBLOCK) :
-        m_devName(devname), m_inputIndex(input_index), m_formatList(formatList), m_width(width), m_height(height), m_fps(fps), m_verbose(verbose), m_openFlags(openFlags) {}
+    V4L2DeviceParameters(const char *devname, const std::list<unsigned int> &formatList, unsigned int width,
+                         unsigned int height, int fps, unsigned int input_index = 0, int verbose = 0,
+                         int openFlags = O_RDWR | O_NONBLOCK) :
+            m_devName(devname), m_inputIndex(input_index), m_formatList(formatList), m_width(width), m_height(height),
+            m_fps(fps), m_verbose(verbose), m_openFlags(openFlags) {}
+
     /**
      * @brief V4L2DeviceParameters
      * @param devname
@@ -88,76 +91,96 @@ struct V4L2DeviceParameters
      * @param verbose
      * @param openFlags
      */
-    V4L2DeviceParameters(const char* devname, unsigned int format, unsigned int width, unsigned int height, int fps,unsigned int input_index = 0, int verbose = 0, int openFlags = O_RDWR | O_NONBLOCK) :
-        m_devName(devname), m_inputIndex(input_index), m_width(width), m_height(height), m_fps(fps), m_verbose(verbose), m_openFlags(openFlags) {
-			if (format) {
-				m_formatList.push_back(format);
-			}
-	}
-		
-	std::string m_devName;
+    V4L2DeviceParameters(const char *devname, unsigned int format, unsigned int width, unsigned int height, int fps,
+                         unsigned int input_index = 0, int verbose = 0, int openFlags = O_RDWR | O_NONBLOCK) :
+            m_devName(devname), m_inputIndex(input_index), m_width(width), m_height(height), m_fps(fps),
+            m_verbose(verbose), m_openFlags(openFlags) {
+        if (format) {
+            m_formatList.push_back(format);
+        }
+    }
+
+    std::string m_devName;
     unsigned int m_inputIndex;
-	std::list<unsigned int> m_formatList;
-	unsigned int m_width;
-	unsigned int m_height;
-	int m_fps;			
-	int m_verbose;
-	int m_openFlags;
+    std::list<unsigned int> m_formatList;
+    unsigned int m_width;
+    unsigned int m_height;
+    int m_fps;
+    int m_verbose;
+    int m_openFlags;
 };
 
 // ---------------------------------
 // V4L2 Device
 // ---------------------------------
-class V4l2Device
-{		
-	friend class V4l2Capture;
-	friend class V4l2Output;
-	
-	protected:	
-		void close();	
-	
-        int initdevice(const char *dev_name , unsigned int mandatoryCapabilities );
-		int checkCapabilities(int fd, unsigned int mandatoryCapabilities);
-		int configureFormat(int fd);
-		int configureFormat(int fd, unsigned int format, unsigned int width, unsigned int height);
-		int configureParam(int fd);
+class V4l2Device {
+    friend class V4l2Capture;
 
-        virtual bool init(unsigned int mandatoryCapabilities);
-		virtual size_t writeInternal(char*, size_t) { return -1; }
-		virtual bool startPartialWrite(void)        { return false; }
-		virtual size_t writePartialInternal(char*, size_t) { return -1; }
-		virtual bool endPartialWrite(void)          { return false; }
-		virtual size_t readInternal(char*, size_t)  { return -1; }
-	
-	public:
-		V4l2Device(const V4L2DeviceParameters&  params, v4l2_buf_type deviceType);		
-		virtual ~V4l2Device();
-	
-		virtual bool isReady() { return (m_fd != -1); }
-		virtual bool start()   { return true; }
-		virtual bool stop()    { return true; }
-	
-		unsigned int getBufferSize() { return m_bufferSize; }
-		unsigned int getFormat()     { return m_format;     }
-		unsigned int getWidth()      { return m_width;      }
-		unsigned int getHeight()     { return m_height;     }
-        unsigned char *getBusInfo() { return  bus_info;    }
-		int getFd()         { return m_fd;         }
-		void queryFormat();	
+    friend class V4l2Output;
 
-	protected:
-		V4L2DeviceParameters m_params;
-		int m_fd;
-		v4l2_buf_type m_deviceType;	
-	
-		unsigned int m_bufferSize;
-		unsigned int m_format;
-		unsigned int m_width;
-		unsigned int m_height;	
+protected:
+    void close();
 
-		struct v4l2_buffer m_partialWriteBuf;
-		bool m_partialWriteInProgress;
-        unsigned char bus_info[32];
+    int initdevice(const char *dev_name, unsigned int mandatoryCapabilities);
+
+    int checkCapabilities(int fd, unsigned int mandatoryCapabilities);
+
+    int configureFormat(int fd);
+
+    int configureFormat(int fd, unsigned int format, unsigned int width, unsigned int height);
+
+    int configureParam(int fd);
+
+    virtual bool init(unsigned int mandatoryCapabilities);
+
+    virtual size_t writeInternal(char *, size_t) { return -1; }
+
+    virtual bool startPartialWrite(void) { return false; }
+
+    virtual size_t writePartialInternal(char *, size_t) { return -1; }
+
+    virtual bool endPartialWrite(void) { return false; }
+
+    virtual size_t readInternal(char *, size_t) { return -1; }
+
+public:
+    V4l2Device(const V4L2DeviceParameters &params, v4l2_buf_type deviceType);
+
+    virtual ~V4l2Device();
+
+    virtual bool isReady() { return (m_fd != -1); }
+
+    virtual bool start() { return true; }
+
+    virtual bool stop() { return true; }
+
+    unsigned int getBufferSize() { return m_bufferSize; }
+
+    unsigned int getFormat() { return m_format; }
+
+    unsigned int getWidth() { return m_width; }
+
+    unsigned int getHeight() { return m_height; }
+
+    unsigned char *getBusInfo() { return bus_info; }
+
+    int getFd() { return m_fd; }
+
+    void queryFormat();
+
+protected:
+    V4L2DeviceParameters m_params;
+    int m_fd;
+    v4l2_buf_type m_deviceType;
+
+    unsigned int m_bufferSize;
+    unsigned int m_format;
+    unsigned int m_width;
+    unsigned int m_height;
+
+    struct v4l2_buffer m_partialWriteBuf;
+    bool m_partialWriteInProgress;
+    unsigned char bus_info[32];
 };
 
 
