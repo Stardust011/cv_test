@@ -61,9 +61,17 @@ aux_source_directory(Lib/libv4l2_opencv_mat/src libv4l2_SRC_FILES)
 add_library(libv4l2 STATIC ${libv4l2_SRC_FILES})
 target_include_directories(libv4l2 PUBLIC "Lib/libv4l2_opencv_mat/inc")
 
+add_library(WzSerialPortPlus STATIC Lib/WzSerialPortPlus/WzSerialPortPlus.cpp )
+target_include_directories(WzSerialPortPlus PUBLIC "Lib/WzSerialPortPlus")
 
 set(SRC Src/armour.cpp Src/new_uart_thread_init.cpp Src/led.cpp Src/kalman.cpp )
 set(INC Inc/armour.h   Inc/new_uart_thread_init.h Inc/led.h Inc/kalman.h )
 add_executable(cv_test ${SRC} ${INC})
 target_link_libraries(cv_test libv4l2)
+
+#target_link_libraries(cv_test WzSerialPortPlus)
 #---------------------END----------------------
+
+#!
+add_executable(test_lib main.cpp)
+target_link_libraries(test_lib WzSerialPortPlus)

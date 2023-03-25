@@ -1,15 +1,27 @@
-#include "iostream"
-#include<opencv2/opencv.hpp>
-using namespace std;
-using namespace cv;
+//
+// Created by Stardust on 2023/3/25.
+//
 
-int main_test() {
-    Mat img = imread(R"(C:\Users\Stardust\Pictures\Saved Pictures\PIXIV\94905891_p0.jpg)");
-    if (img.empty()) {
-        cout << "Error" << endl;
-        return -1;
+#include <iostream>
+#include <string>
+#include <WzSerialPortPlus.h>
+
+int main() {
+    WzSerialPortPlus serialPort;
+    serialPort.setReceiveCalback([&](char* data, int length){
+        printf("received: %s\n",data);
+
+        std::string responsePrefix = "received: ";
+        std::string response(data,length);
+        response = responsePrefix + response;
+
+        serialPort.send((char*)response.c_str(), response.length());
+    });
+    if(serialPort.open("/dev/ttyS1", 9600, 1, 8, 'n'))
+    {
+        getchar();
+        serialPort.close();
     }
-    imshow("Pic", img);
-    waitKey();
+
     return 0;
 }

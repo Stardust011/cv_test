@@ -15,7 +15,7 @@ int CMD_COLOR = 1;
 int DATA_UP_Ar = 23;
 
 
-Date_message DOWN_DATA;    //Êý¾ÝÏÂ´«´óÄÜÁ¿·û
+Date_message DOWN_DATA;
 Date_message DOWN_DATA_AR;
 
 static unsigned short int Get_CRC16_Check_Sum(char *pchMessage, int dwLength, int wCRC);
@@ -97,8 +97,7 @@ void *thread_read(void *arg) {
         ret = read(UART_ID, coordinate_num, sizeof(coordinate_num));
         //ret = read(UART_ID,coordinate_num,sizeof(coordinate_num));
 
-        //ÅÐ¶ÏÊý¾ÝÖ¡Í·ÊÇ·ñÊÇËùÒªµÄÊý¾Ý,0x05ÎªÄ£Ê½
-        //ÏÈÐ£ÑéÊÔÊÔ
+
         //printf("ret is:%d\n",ret);
         //printf("recv: %x\n",coordinate_num);
         //printf("recv: %4x\n",coordinate_num);
@@ -111,14 +110,14 @@ void *thread_read(void *arg) {
             //printf("recv data\n");
             //printf("bb!\n");
             if (coordinate_num[4] == 0x01) {
-                //Ñ¡¶¨Îªºì·½
+
                 MOD_B_R = MOD_RED;
                 READ_DATA = true;
                 Set_Mod = true;
                 CMD_COLOR = 1;
                 //bule_or_red = false;
             } else if (coordinate_num[4] == 0x02) {
-                //Ñ¡¶¨ÎªÀ¶·½£¬¶ÁÊý¾Ý¿ª£¬ÉèÖÃÄ£Ê½¿ª
+
                 MOD_B_R = MOD_BLUE;
                 READ_DATA = true;
                 Set_Mod = true;
@@ -133,7 +132,7 @@ void *thread_read(void *arg) {
                     write(led_fd,LED_H,sizeof(LED_H));
                 }*/
             else if (coordinate_num[4] == 0x04) {
-                //Ñ¡¶¨´ò´ó·ù
+
                 //printf("enter power big .." );
                 MOD_B_R = MOD_POWER_BIG;
                 /*if(coordinate_num[5] == 0x01)
@@ -171,7 +170,7 @@ void *thread_read(void *arg) {
 
                 MOD_B_R = MOD_NULL;
             }
-            //ÓÉÓÚ½ÓÊÕµ½µÄÊý¾ÝÎªËÄÎ»16½øÖÆÊý¾Ý£¬ËùÒÔÓ¦¸ÃÎª
+
             //Pitch = coordinate_num[4]/10+coordinate_num[4]%10;//ÔÝ¶¨**********************
         }
     }
@@ -214,11 +213,7 @@ const unsigned short int wCRC_Table_Judge[256] =
                 0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
         };
 
-/*****************************************************
-@brief Êý¾Ý±àÂë(×°¼×°å)
-@param xdata,ydata,zdata,tdata,cmdata×÷ÎªÉÏ´«µÄ×ø±êÊ±¼ä¼ä¸ôµÈ
-@write cjj
-*****************************************************/
+
 void send_message_AR(float xdata, float ydata, float zdata, float tdata, uint8_t Cmdata) {
     memset(&DOWN_DATA_AR, 0, sizeof(DOWN_DATA_AR));
     DOWN_DATA_AR.FH_data.Head = 0xA5;
@@ -228,9 +223,9 @@ void send_message_AR(float xdata, float ydata, float zdata, float tdata, uint8_t
     DOWN_DATA_AR.Data.Ar_data.x = (int32_t) xdata;
     DOWN_DATA_AR.Data.Ar_data.y = (int32_t) ydata;
     DOWN_DATA_AR.Data.Ar_data.z = (int32_t) zdata;
-    DOWN_DATA_AR.Data.Ar_data.Time_Interval = (int32_t) tdata;//Ê±¼ä¼ä¸ô
-    DOWN_DATA_AR.Data.Ar_data.Goal_State = Cmdata;//Ê±¼ä¼ä¸ô
-    Append_CRC16_Check_Sum_Judge((char *) &DOWN_DATA_AR, DATA_UP_Ar);//¼ÓÈëÊý¾ÝÐ£Ñé
+    DOWN_DATA_AR.Data.Ar_data.Time_Interval = (int32_t) tdata;
+    DOWN_DATA_AR.Data.Ar_data.Goal_State = Cmdata;
+    Append_CRC16_Check_Sum_Judge((char *) &DOWN_DATA_AR, DATA_UP_Ar);
 
 }
 
@@ -243,20 +238,20 @@ int set_uart_mode(speed_t speed, int vtime, int vmin) {
         return -1;
     }
 
-    bzero(&newtio, sizeof(newtio));     //ÖÃ0
-    newtio.c_iflag |= IGNBRK | BRKINT;    //·ÀÖ¹½ÓÊÕ´íÎóµÄÕê
-    newtio.c_cflag |= CLOCAL | CREAD;  //¼¤»î
-    newtio.c_cflag &= ~CSIZE;        //Çå¿ÕÒÔÇ°µÄ±ê¼Ç
-    newtio.c_cflag |= CS8;            //Êý¾ÝÎ»Îª8Î»
-    newtio.c_cflag &= ~PARENB;        //ÎÞÐ£Ñé
-    cfsetispeed(&newtio, speed);   //ËÙ¶È
+    bzero(&newtio, sizeof(newtio));
+    newtio.c_iflag |= IGNBRK | BRKINT;
+    newtio.c_cflag |= CLOCAL | CREAD;
+    newtio.c_cflag &= ~CSIZE;
+    newtio.c_cflag |= CS8;
+    newtio.c_cflag &= ~PARENB;
+    cfsetispeed(&newtio, speed);
     cfsetospeed(&newtio, speed);
-    newtio.c_cflag &= ~CSTOPB;        //1//  ÉèÖÃÍ£Ö¹Î»->1¸öÍ£Ö¹Î»
-    newtio.c_cc[VTIME] = vtime;        //µÈ´ýÊ±¼ä
+    newtio.c_cflag &= ~CSTOPB;
+    newtio.c_cc[VTIME] = vtime;
     newtio.c_cc[VMIN] = vmin;
-    tcflush(UART_ID, TCIFLUSH);    //Çå¿Õ´®¿Ú
+    tcflush(UART_ID, TCIFLUSH);
 
-    if ((tcsetattr(UART_ID, TCSANOW, &newtio)) != 0)   //ÉèÖÃÐÂµÄ²ÎÊý,TCIFLUSHË¢ÇåÊäÈë¶ÓÁÐ
+    if ((tcsetattr(UART_ID, TCSANOW, &newtio)) != 0)
     {
         printf("set_uart_mode failed\n");
         return -1;
@@ -279,13 +274,13 @@ int UART_WRITE_DATA(unsigned char *data, int data_sizeof) {
 }
 
 int INIT_UART() {
-    UART_ID = open(PATHNAME, O_RDWR | O_NOCTTY);//´ò¿ª´®¿Ú
+    UART_ID = open(PATHNAME, O_RDWR | O_NOCTTY);
     if (UART_ID < 0) {
         printf("open UART3 fail\n");
         return -1;
     }
     printf("open UART3 success\n");
-    set_uart_mode(RandRate, 0, 1);//×îºóÒ»¸ö0´ú±íÓÀÔ¶µÄ·Ç×èÈû¶Á£¬ÈÎºÎÌõ¼þ¶¼Âú×ã
+    set_uart_mode(RandRate, 0, 1);
     return 1;
 }
 
@@ -323,13 +318,13 @@ static unsigned short int Get_CRC16_Check_Sum(char *pchMessage, int dwLength, in
 
 void *thread_write(void *arg) {
     int ret;
-    //ËÄ¸öÐ£ÑéÊý¾Ý
+
     unsigned char data_red_verify[] = {0xA5, 0x03, 0x01, 0x00, 0x01};
     unsigned char data_blue_verify[] = {0xA5, 0x03, 0x01, 0x00, 0x02};
     // char data_auto_verify[] = {0xA5,0x03,0x01,0x00,0x03};
     // char data_power_small_verify[] = {0xA5,0x03,0x01,0x00,0x05};
     // char data_power_big_verify[]  = {0xA5,0x03,0x01,0x00,0x04};
-    //Ñ­»·Ð´Êý¾Ý
+
 
     while (1) {
         //if(READ_DATA == false)
@@ -344,82 +339,51 @@ void *thread_write(void *arg) {
         //	MOD_B_R = MOD_RED ;	//Direct into the red pattern
         /*=============debuging==============*/
         switch (MOD_B_R) {
-            //ºìÉ«ºÍÀ¶É«×°¼×°åÐ´µÄÊý¾ÝÊÇÒ»ÑùµÄ
             case MOD_RED:
                 if (Set_Mod == true) {
                     //·¢ËÍÐ£ÑéÊý¾ÝÖ»·¢ËÍÒ»´Î
-                    Append_CRC16_Check_Sum_Judge(data_red_verify, sizeof(data_red_verify) + 2);//¼ÓÉÏCR¼ìÑéÎ»
+                    Append_CRC16_Check_Sum_Judge(data_red_verify, sizeof(data_red_verify) + 2);
                     ret = UART_WRITE_DATA(data_red_verify, sizeof(data_red_verify) + 2);
                     Set_Mod = false;
                     break;
                 }
-                //Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));//¼ÓÉÏCR¼ìÑéÎ»
+                //Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));
                 /*====Red and blue doesn't write data===*/
 
                 ret = UART_WRITE_DATA((char *) &DOWN_DATA_AR, DATA_UP_Ar);
                 break;
             case MOD_BLUE:
                 if (Set_Mod == true) {
-                    //·¢ËÍÐ£ÑéÊý¾ÝÖ»·¢ËÍÒ»´Î
-                    Append_CRC16_Check_Sum_Judge(data_blue_verify, sizeof(data_blue_verify) + 2);//¼ÓÉÏCR¼ìÑéÎ»
+                    Append_CRC16_Check_Sum_Judge(data_blue_verify, sizeof(data_blue_verify) + 2);
                     ret = UART_WRITE_DATA(data_blue_verify, sizeof(data_blue_verify) + 2);
                     Set_Mod = false;
                     break;
                 }
-                //	Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));//¼ÓÉÏCR¼ìÑéÎ»
+                //	Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));
                 /*====Red and blue doesn't write data===*/
 
                 ret = UART_WRITE_DATA((char *) &DOWN_DATA_AR, DATA_UP_Ar);
                 break;
-                //´óÐ¡·ûÐ´µÄÊý¾ÝÒ²ÊÇÒ»ÑùµÄ
             case MOD_POWER_BIG:
                 if (Set_Mod == true) {
                     //·¢ËÍÐ£ÑéÊý¾ÝÖ»·¢ËÍÒ»´Î
-                    Append_CRC16_Check_Sum_Judge(data_red_verify, sizeof(data_red_verify) + 2);//¼ÓÉÏCR¼ìÑéÎ»
+                    Append_CRC16_Check_Sum_Judge(data_red_verify, sizeof(data_red_verify) + 2);
                     ret = UART_WRITE_DATA(data_red_verify, sizeof(data_red_verify) + 2);
                     Set_Mod = false;
                     break;
                 }
-                //Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));//¼ÓÉÏCR¼ìÑéÎ»
+                //Append_CRC8_Check_Sum_Judge(data_armour, sizeof(data_armour));
                 /*====Red and blue doesn't write data===*/
 
                 ret = UART_WRITE_DATA((char *) &DOWN_DATA_AR, DATA_UP_Ar);
                 break;
-                /*case MOD_POWER_SMALL:
-                    if(Set_Mod == true)
-                    {
-                        //·¢ËÍÐ£ÑéÊý¾ÝÖ»·¢ËÍÒ»´Î
-                        Append_CRC16_Check_Sum_Judge(data_power_small_verify, sizeof(data_power_small_verify)+2);//¼ÓÉÏCR¼ìÑéÎ»
-                        ret = UART_WRITE_DATA(data_power_small_verify,sizeof(data_power_small_verify)+2);
-                        Set_Mod = false;
-                        break;
-                    }*/
-                //	Append_CRC8_Check_Sum_Judge(data_power, sizeof(data_power));//¼ÓÉÏCR¼ìÑéÎ»
-                /*ret = UART_WRITE_DATA((char *)&DOWN_DATA,DATA_UP_PW);
-                break;*/
-                /*case MOD_AUTO:
-                    if(Set_Mod == true)
-                    {
-                        //·¢ËÍÐ£ÑéÊý¾ÝÖ»·¢ËÍÒ»´Î
-                        Append_CRC16_Check_Sum_Judge(data_auto_verify, sizeof(data_auto_verify)+2);//¼ÓÉÏCR¼ìÑéÎ»
-                        ret = UART_WRITE_DATA(data_auto_verify,sizeof(data_auto_verify)+2);
-                        Set_Mod = false;
-                        break;
-                    }
-                //	Append_CRC8_Check_Sum_Judge(data_power, sizeof(data_power));//¼ÓÉÏCR¼ìÑéÎ»
-                    /*============only auto play can write the data========*/
-                /*ret = UART_WRITE_DATA((char *)&DOWN_DATA_AR,DATA_UP_Ar);
-                break;*/
+
             default:
                 break;
         }
-        /*========debuging======*/
-        //#include <syswait.h>
+
         usleep(1000 * 3);//us
-        //	Sleep(100);//ms
-        //	sleep(1);	//s
-        /*========debuging======*/
-        //	}
+
 
     }
     return 0;

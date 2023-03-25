@@ -1,15 +1,15 @@
 #ifndef _LED_H
 #define _LED_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>                   //·ûºÅ³£Á¿£¬ÔÚVC»·Ÿ³ÏÂ²»°üº¬Ëü¿ÉÄÜ»á±šŽí
 #include <sys/ioctl.h>                //GPIO Control
 #include <sys/stat.h>                 //»ñÈ¡ÎÄŒþÊôÐÔ
 #include <linux/fs.h>                 //ÓëÉè±žÇý¶¯³ÌÐòÓÐ¹Ø
 #include <fcntl.h>                    //žÄ±äÒÑŽò¿ªµÄÎÄŒþÐÔÖÊ
-#include <string.h>
+#include <cstring>
 #include <termios.h>                  //²ÎÊýÉèÖÃ
-#include <errno.h>
+#include <cerrno>
 #include <iostream>
 #include "new_uart_thread_init.h"
 

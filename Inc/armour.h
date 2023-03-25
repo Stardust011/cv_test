@@ -20,7 +20,7 @@ using namespace std;
 
 using namespace cv;
 
-#include <math.h>
+#include <cmath>
 
 #ifndef WORK_WITH_WINDOWS
 
@@ -120,7 +120,7 @@ public:
     double CalculateZ(float, float, float, float);
 
 //	double CalculateZ(Rect armour_rect);
-    double CalculateZ(Rect);
+//    double CalculateZ(Rect);
 
     vector<double> Calculate_angle(const Point &, const Point &, double);
 

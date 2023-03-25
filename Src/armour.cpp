@@ -1533,12 +1533,14 @@ static void *get_fram_thread(void *arg) {
 
     int serial_camera = get_usb_camara_serial(BIG_OR_SMALL);
     V4L2DeviceParameters param("/dev/video0", V4L2_PIX_FMT_MJPEG, IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
-    if (serial_camera == 0) {
-//        cap_thread = set_v4l("/dev/video0");
-    } else if (serial_camera == 1) {
-        param.m_devName = "/dev/video1";
+    if (serial_camera != 0) {
+        if (serial_camera == 1) {
+            param.m_devName = "/dev/video1";
+        }
     } else {
+//        cap_thread = set_v4l("/dev/video0");
     }
+
     V4l2Capture *cap_thread = V4l2Capture::create(param);
     //TODO 需要经过验证
     int thread_flags = 0;
