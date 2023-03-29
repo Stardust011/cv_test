@@ -62,53 +62,18 @@ const unsigned char CRC8_TAB_Judge[256] =
 unsigned int Verify_CRC16_Check_Sum_Judge(char *pchMessage, int dwLength);
 
 void *thread_read(void *arg) {
-    //unsigned char coordinate_num_temp[16] = {0};
+
     char coordinate_num[17] = {};
-    //char *coordinate_num_temp;
-    //coordinate_num_temp = (char *)malloc(sizeof(char) * 4);
+
     int ret;
     bool bule_or_red = true;
     int a;
-    //int led_fd;//the auto led
 
-    /*=========== debuging =========*/
-    //bule_or_red = false;	// unread the uart
-    /*=========== debuging =========
-    led_fd = open("/sys/class/gpio/export ",O_WRONLY);
-    if(led_fd == -1)
-    {
-        printf("open1 led error!\n");
-    }
-    write(led_fd,"48",sizeof("48"));
-    close(led_fd);
-    led_fd = open("/sys/class/gpio/gpio158/value",O_RDWR);
-    if(led_fd == -1)
-    {
-        printf("open led error!\n");
-    }
-    */
-    //memset(coordinate_num, 0, sizeof(coordinate_num));
-    //memset(coordinate_num_temp, 0, sizeof(char) * 4);
-    //printf("original : %x\n",coordinate_num_temp);
-//	printf("original : %x\n",coordinate_num);
     while (bule_or_red) {
-        //printf("coordinate_num size is : %d\n",sizeof(coordinate_num));
-        //ret = read(UART_ID,coordinate_num,sizeof(coordinate_num));//½«´®¿ÚÊý¾Ý¸øcoordinate
+
         ret = read(UART_ID, coordinate_num, sizeof(coordinate_num));
-        //ret = read(UART_ID,coordinate_num,sizeof(coordinate_num));
 
-
-        //printf("ret is:%d\n",ret);
-        //printf("recv: %x\n",coordinate_num);
-        //printf("recv: %4x\n",coordinate_num);
-        //a = Verify_CRC16_Check_Sum_Judge(coordinate_num,7);
-        //printf("the check is %d\n",a);
-        //printf("recv2: %02x\n",(unsigned char)coordinate_num[0]);
-        //printf("bb!\n");
         if ((unsigned char) coordinate_num[0] == 0xA5 && (unsigned char) coordinate_num[1] == 0x05) {
-
-            //printf("recv data\n");
-            //printf("bb!\n");
             if (coordinate_num[4] == 0x01) {
 
                 MOD_B_R = MOD_RED;
@@ -124,57 +89,21 @@ void *thread_read(void *arg) {
                 CMD_COLOR = 2;
                 //bule_or_red = false;
             }
-                /*else if(coordinate_num[4] == 0x03)
-                {
-                    MOD_B_R = MOD_AUTO;
-                    READ_DATA = true;
-                    Set_Mod = true;
-                    write(led_fd,LED_H,sizeof(LED_H));
-                }*/
+
             else if (coordinate_num[4] == 0x04) {
 
                 //printf("enter power big .." );
                 MOD_B_R = MOD_POWER_BIG;
-                /*if(coordinate_num[5] == 0x01)
-                {
-                    //return to the center
-                    re_center = BUFF_CENTER;
 
-                }else if(coordinate_num[5] == 0x02)
-                {
-                    //re to play
-                    re_buff = BUFF_REPEAT;
-                }*/
                 READ_DATA = true;
                 Set_Mod = true;
-
             }
-                /*else if(coordinate_num[4] == 0x05)
-                {
-                    //Ñ¡¶¨Ð¡·ù
-                    MOD_B_R = MOD_POWER_SMALL;
-                    if(coordinate_num[5] == 0x01)
-                    {
-                        //return to the center
-                        re_center = BUFF_CENTER;
 
-                    }else if(coordinate_num[5] == 0x02)
-                    {
-                        //re to play
-                        re_buff = BUFF_REPEAT;
-                    }
-                    READ_DATA = true;
-                    Set_Mod = true;
-                }*/
             else {
-
                 MOD_B_R = MOD_NULL;
             }
-
-            //Pitch = coordinate_num[4]/10+coordinate_num[4]%10;//ÔÝ¶¨**********************
         }
     }
-    return 0;
 }
 
 const unsigned short int wCRC_Table_Judge[256] =

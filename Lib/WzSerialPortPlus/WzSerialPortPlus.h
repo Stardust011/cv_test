@@ -1,6 +1,3 @@
-//
-// Created by Stardust on 2023/3/25.
-//
 /**
  * @file WzSerialPortPlus.h
  * @author ouyangwei

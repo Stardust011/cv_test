@@ -398,9 +398,9 @@ vector<vector<Point>> armour::get_point_contours(const Mat &src_image)//3
 {
     vector<vector<Point>> contour_vector;
     vector<Vec4i> contour_hierachy;
-    cout << "hello1 " << endl;
+//    cout << "hello1 " << endl;
     findContours(src_image, contour_vector, contour_hierachy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
-    cout << "hello2" << endl;
+//    cout << "hello2" << endl;
     //cout << "contour_vector size:" << contour_vector.size() << endl;
     return contour_vector;
 }
@@ -1991,7 +1991,9 @@ void armour::fire(Mat &src_image) {
                   Scalar(0, 255, 255), 2, 8);
         circle(result_pic, send_point, 2, Scalar(255, 0, 255), 2, 8);
         cost_time = (get_sys_time() - cost_time) / getTickFrequency();
-        //display("display" , result_pic);
+
+        //TODO 这里
+//        display("display" , result_pic);
         cout << "fps:" << 1. / cost_time << endl;
         //index_cap.open(0);
         if (send_point == ERROR_POINT) {
@@ -2002,6 +2004,7 @@ void armour::fire(Mat &src_image) {
                 send_message_AR(0, 0, distance_single, cost_time, 1);
             }
             test.push_back(Point(320, 240));
+            system("clear");
             return;
         }
         cout << "distance is : " << distance_single << endl;
@@ -2028,8 +2031,8 @@ void armour::fire(Mat &src_image) {
                                                                          send_point.x + select_rect.width / 2.0 - 320),
                                                                    distance_single * 10);
         vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
-                                                                    Point(send_point.x + select_rect.width / 2.0 - 320,
-                                                                          0), distance_single * 10);
+                                                                    Point(send_point.x + select_rect.width / 2.0 - 320, 0),
+                                                                    distance_single * 10);
         cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
 
 
@@ -2047,14 +2050,12 @@ void armour::fire(Mat &src_image) {
 
         vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
                                                                                 target_point_kalman.y - 240),
-                                                             distance_single);
+                                                                                distance_single);
         cout << "x_angle: " << angle_vector[0] << endl;
         cout << "PH_angle: " << angle_vector[1] << endl;
         cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
-
+        display("display",src_image);
+        system("clear");
     }
 
-    return;
 }
-
-
