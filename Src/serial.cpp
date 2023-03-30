@@ -67,6 +67,8 @@ serialData serialPosData(pos_data* data) {
     data1.data.y = data->y;
     data1.data.z = data->z;
     data1.data.time_interval = data->time_interval;
+    data1.data.x_c = data->x_c;
+    data1.data.y_c = data->y_c;
     union crc16 crc_data{};
     crc_data.crc = crc16((unsigned char*)&data1, sizeof(data1)-4);
     data1.crc[0] = crc_data.crc_char[0];
@@ -132,4 +134,8 @@ void *serialSend(void *pVoid){
 
 void setDataCmd(int cmd){
     data1.cmd = cmd;
+}
+
+void setDataColor(int color){
+    data1.id = color;
 }
