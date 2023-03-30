@@ -48,8 +48,8 @@ class serial {
 };
 
 bool serialInit();
-void serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval);
-void serialPosData(pos_data* data);
+serialData serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval);
+serialData serialPosData(pos_data* data);
 void setDataCmd(int cmd);
 void serialClose();
 void * serialRead(void *pVoid);

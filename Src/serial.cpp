@@ -46,7 +46,7 @@ static unsigned short crc16(const unsigned char* data_p, unsigned char length){
  * @param z
  * @param time_interval
  */
-void serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval) {
+serialData serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval) {
     data1.data.x = x;
     data1.data.y = y;
     data1.data.z = z;
@@ -55,13 +55,14 @@ void serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval) {
     crc_data.crc = crc16((unsigned char*)&data1, sizeof(data1)-4);
     data1.crc[0] = crc_data.crc_char[0];
     data1.crc[1] = crc_data.crc_char[1];
+    return data1;
 }
 
 /*!
  * @brief 发送数据
  * @param pos_data data
  */
-void serialPosData(pos_data* data) {
+serialData serialPosData(pos_data* data) {
     data1.data.x = data->x;
     data1.data.y = data->y;
     data1.data.z = data->z;
@@ -71,6 +72,7 @@ void serialPosData(pos_data* data) {
     data1.crc[0] = crc_data.crc_char[0];
     data1.crc[1] = crc_data.crc_char[1];
     serialPort.send((char *) &data1, sizeof(data1));
+    return data1;
 }
 
 /*!
