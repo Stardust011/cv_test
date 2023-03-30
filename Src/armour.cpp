@@ -43,7 +43,7 @@ int get_usb_camara_serial(bool big_or_small = true, string path = "/sys/devices/
     //  vector<string> file_names;
     DIR *path_video;
     struct dirent *ptr;
-    if (big_or_small == true) {
+    if (big_or_small) {
         cout << "big function" << endl;
         path += "1-4/1-4:1.0/video4linux/";
         if ((path_video = opendir((path + "video1/").c_str())) != NULL)// can't reach this path or can't get any file
@@ -54,7 +54,7 @@ int get_usb_camara_serial(bool big_or_small = true, string path = "/sys/devices/
         } else
             return -1;
 
-    } else if (big_or_small == false) {
+    } else if (!big_or_small) {
         cout << "small function " << endl;
         path += "1-2/1-2:1.0/video4linux/";
         if ((path_video = opendir((path + "video1/").c_str())) != NULL)// can't reach this path or can't get any file
@@ -95,30 +95,6 @@ double pnp_Get_Distance_armour(Rect &roi) {
     cout << "pnp distance is:" << realistic_distance << endl;
     return realistic_distance;
 }
-
-double pnp_Get_Distance_buf(Rect &roi) {
-    double realistic_distance;
-    Mat rotationMatrix, tvec;;
-    const static Mat cameraMatrix = (Mat_<double>(3, 3) << 780.461, 0, 224.3668, 0, 781.158, 233.955, 0, 0, 1);
-    const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
-    vector<Point3f> realistic;
-    realistic.push_back(cv::Point3f(0, 0, 0));
-    realistic.push_back(cv::Point3f(0, 0.3, 0));
-    realistic.push_back(cv::Point3f(0.2, 0.3, 0));
-    realistic.push_back(cv::Point3f(0.2, 0, 0));
-    vector<Point2f> point_get;
-    point_get.push_back(Point2f(roi.x, roi.y));
-    point_get.push_back(Point2f(roi.x + roi.width, roi.y));
-    point_get.push_back(Point2f(roi.x + roi.width, roi.y + roi.height));
-    point_get.push_back(Point2f(roi.x, roi.y + roi.height));
-    Mat rvec(3, 1, DataType<double>::type);
-    solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
-    Rodrigues(rvec, rotationMatrix);
-    realistic_distance = tvec.at<double>(2, 0) / 2.0;
-    cout << "distance is:" << realistic_distance << endl;
-    return realistic_distance;
-}
-
 
 static void *led_on_thread(void *arg) {
     int file_describe = gpio158_open();
@@ -208,28 +184,8 @@ armour::~armour() {
 
 
 void armour::Port_armour() {
-
 }
 
-void mytrackBarCallback(int value, void *data) {
-    *((int *) data) = value;
-    cout << "value : " << value << endl;
-}
-
-
-Mat HSV_to_gray(const Mat &src_image, int &h_min, int &h_max, int &s_min, int &s_max, int &v_min, int &v_max) {
-    Mat hsv_image;
-    cvtColor(src_image, hsv_image, COLOR_BGR2HSV);
-
-    Mat dst_image;
-    //namedWindow("image show", WINDOW_FREERATIO);
-    inRange(hsv_image, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), dst_image);
-
-    //createTrackbar("h_min", "image show", &val, 255, mytrackBarCallback, &h_min);
-    //imshow("image show",dst_image);
-    return dst_image;
-
-}
 
 Mat armour::HSV_to_gray(const Mat &src_image, int mode, int h_min = 0, int h_max = 255, int s_min = 0, int s_max = 255,
                         int v_min = 0, int v_max = 255) {
@@ -273,120 +229,6 @@ Mat armour::HSV_to_gray(const Mat &src_image, int mode, int h_min = 0, int h_max
 }
 
 
-Mat armour::YUV_to_gray(const Mat &src_image_param, int Mode, int Cb_min = 0, int Cb_max = 255, int Cr_min = 0,
-                        int Cr_max = 255, int Y_min = 0, int Y_max = 255) {
-    Mat src_image;
-    cvtColor(src_image_param, src_image, COLOR_BGR2YCrCb);
-    vector<Mat> src_channels;
-    split(src_image, src_channels);
-    Mat image_Cb = src_channels.at(2);
-    Mat image_Cr = src_channels.at(1);
-    Mat image_Y = src_channels.at(0);
-    Mat result_pic(src_image.rows, src_image.cols, CV_8UC1);
-    switch (Mode) {
-        case MODE_BLUE:
-            Cb_min = 129;
-            Cb_max = 255;
-            Y_min = 224;
-            Y_max = 250;
-            Cr_min = 99;
-            Cr_max = 122;
-            break;
-        case MODE_RED:
-            Cb_min = 57;
-            Cb_max = 189;
-            Cr_min = 152;
-            Cr_max = 255;
-            Y_min = 204;
-            Y_max = 239;
-            break;
-        default:
-            break;
-    }
-    if (Mode == MODE_NONE && Cb_min == 0 && Cb_max == 255 && Y_max == 255 && Y_min == 0 && Cr_min == 0 &&
-        Cr_max == 255) {
-        cout << "input error,you need put the argument" << endl;
-        //exit(1);
-    }
-    for (int rows = 0; rows < src_image.rows; rows++) {
-        uchar *image_Cb_rows = image_Cb.ptr<uchar>(rows);
-        uchar *image_Y_rows = image_Y.ptr<uchar>(rows);
-        uchar *image_Cr_rows = image_Cr.ptr<uchar>(rows);
-        uchar *image_result_rows = result_pic.ptr<uchar>(rows);
-        //uchar * image_result_rows = result_pic.ptr<uchar>(rows);
-        for (int cols = 0; cols < src_image.cols; cols++) {
-            if (image_Cb_rows[cols] >= Cb_min && image_Cb_rows[cols] <= Cb_max && image_Y_rows[cols] >= Y_min &&
-                image_Y_rows[cols] <= Y_max && image_Cr_rows[cols] >= Cr_min && image_Cr_rows[cols] <= Cr_max) {
-                image_result_rows[cols] = 255;
-            } else {
-                image_result_rows[cols] = 0;
-            }
-        }
-
-    }
-    return result_pic;
-}
-
-
-Mat armour::rgb_to_gray(const Mat &src_image, int Mode, int R_min = 0, int R_max = 255, int G_min = 0, int G_max = 255,
-                        int B_min = 0, int B_max = 255) {
-
-    vector<Mat> src_channels;
-    split(src_image, src_channels);
-    Mat image_red = src_channels.at(2);
-    Mat image_green = src_channels.at(1);
-    Mat image_blue = src_channels.at(0);
-    Mat result_pic(src_image.rows, src_image.cols, CV_8UC1);
-    switch (Mode) {
-        case MODE_BLUE:
-            R_min = 92;
-            R_max = 255;
-            B_min = 159;
-            B_max = 217;
-            G_min = 140;
-            G_max = 255;
-            break;
-        case MODE_RED:
-            R_min = 255;
-            R_max = 255;
-            G_min = 0;
-            G_max = 255;
-            B_min = 0;
-            B_max = 255;
-            break;
-        default:
-            break;
-    }
-    if (Mode == MODE_NONE && R_min == 0 && R_max == 255 && B_max == 255 && B_min == 0 && G_min == 0 && G_max == 255) {
-        cout << "input error,you need put the argument" << endl;
-        //exit(1);
-    }
-    for (int rows = 0; rows < src_image.rows; rows++) {
-        uchar *image_red_rows = image_red.ptr<uchar>(rows);
-        uchar *image_blue_rows = image_blue.ptr<uchar>(rows);
-        uchar *image_green_rows = image_green.ptr<uchar>(rows);
-        uchar *image_result_rows = result_pic.ptr<uchar>(rows);
-        for (int cols = 0; cols < src_image.cols; cols++) {
-            if (image_red_rows[cols] >= R_min && image_red_rows[cols] <= R_max && image_blue_rows[cols] >= B_min &&
-                image_blue_rows[cols] <= B_max && image_green_rows[cols] >= G_min && image_green_rows[cols] <= G_max) {
-                image_result_rows[cols] = 255;
-            } else {
-                image_result_rows[cols] = 0;
-            }
-        }
-
-    }
-    return result_pic;
-}
-
-Mat armour::erode_pic(const Mat &src_image, int size_element = 1) {
-    Mat dst_image(src_image.rows, src_image.cols, CV_8UC1);
-    Mat kernel = getStructuringElement(MORPH_RECT, Size(size_element, size_element));
-    erode(src_image, dst_image, kernel);
-    return dst_image;
-}
-
-
 Mat armour::dilate_pic(const Mat &src_image, int size_element = 3) {
     Mat dst_image(src_image.rows, src_image.cols, CV_8UC1);
     Mat kernel = getStructuringElement(MORPH_RECT, Size(size_element, size_element));
@@ -398,10 +240,9 @@ vector<vector<Point>> armour::get_point_contours(const Mat &src_image)//3
 {
     vector<vector<Point>> contour_vector;
     vector<Vec4i> contour_hierachy;
-//    cout << "hello1 " << endl;
+
     findContours(src_image, contour_vector, contour_hierachy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
-//    cout << "hello2" << endl;
-    //cout << "contour_vector size:" << contour_vector.size() << endl;
+
     return contour_vector;
 }
 
@@ -506,18 +347,6 @@ vector<double> armour::get_rotate_angle(Mat &src_image, const vector<vector<Poin
     }
     return theata_vector;
 }
-
-/*void armour::get_rotate_angle(const vector<vector<Point> > & rotate_rect, vector<double>& rotate_angle)
-{
-	cout << "enter get_rotate_angle func" << endl;
-	cout << "rotate_rect size:" << rotate_rect.size() << endl;
-	for (int num = 0; num < rotate_rect.size(); num++)
-	{
-		RotatedRect tmp_rotate_rect(rotate_rect[num][0], rotate_rect[num][1], rotate_rect[num][2]);
-		cout << "angle is :" << tmp_rotate_rect.angle << endl;
-		rotate_angle.push_back(tmp_rotate_rect.angle;
-	}
-}*/
 
 
 /*
@@ -754,13 +583,6 @@ bool judge_rect_satisfy(const Rect &Roi) {
         return false;
     if ((double) Roi.height / Roi.width < 0.25)
         return false;
-    /*if((double)Roi.height / Roi.width > 0.34 && (double)Roi.height / Roi.width < 0.38)
-        return false;*/
-    /*if(Roi.width > 250 && ((double)Roi.height / Roi.width < 0.4 || (double ) Roi.height / Roi.width > 0.5 ))
-        return false;*/
-    //waitKey();
-    /*if ((double)Roi.height / Roi.width < 0.25 || (double)Roi.height / Roi.width > 0.40)
-        return false;*/
     return true;
 
 }
@@ -773,19 +595,7 @@ armour::judge_the_min_distance(const Mat &gray_image, const vector<vector<Point>
     //cout << "min_distance:" << min_distance << endl;
     vector<vector<Point>> select_vector_point;
     for (register int obj_num = 0; obj_num < vector_point.size(); obj_num++) {
-        /*for (register int rows = 0; rows < vector_point[obj_num].size() - 1; rows++)
-            {
-                for (register int cols = rows + 1; cols < vector_point[obj_num].size(); cols++)
-                {
-                    current_distance = sqrt(pow(((double)vector_point[obj_num][rows].x - vector_point[obj_num][cols].x), 2) + pow((double)vector_point[obj_num][rows].y - vector_point[obj_num][cols].y, 2));
-                    //cout << "current_distance:"<< current_distance << endl;
-                    if (min_distance > current_distance)
-                    {
-                        cout << "change" <<  min_distance<< endl;
-                        min_distance = current_distance;
-                    }
-                }
-            }*/
+
         current_distance = sqrt(pow(((double) vector_point[obj_num][3].x - vector_point[obj_num][0].x), 2) +
                                 pow((double) vector_point[obj_num][3].y - vector_point[obj_num][0].y, 2));
         //cout << "debug:" << current_distance << endl;
@@ -939,38 +749,6 @@ vector<Rect> armour::get_the_distance_vector(const vector<Rect> &vector_rect) {
 }
 
 
-/*vector<Rect> armour::get_the_distance_vector(const  vector<Rect> & vector_rect)
-{
-	vector<vector<Rect> > distance_vector;
-	push_back_none_vector(distance_vector,6);
-	for (int obj_num = 0; obj_num < vector_rect.size(); obj_num++)
-	{
-		if(vector_rect[obj_num].area() > 2000)
-			distance_vector[0].push_back(vector_rect[obj_num]);
-		else if(vector_rect[obj_num].area() > 2900)
-			distance_vector[1].push_back(vector_rect[obj_num]);
-		else if(vector_rect[obj_num].area() > 1500)
-			distance_vector[2].push_back(vector_rect[obj_num]);
-		else if(vector_rect[obj_num].area() > 900)
-			distance_vector[3].push_back(vector_rect[obj_num]);
-		else if(vector_rect[obj_num].area() > 600)
-			distance_vector[4].push_back(vector_rect[obj_num]);
-		else if(vector_rect[obj_num].area() > 400)
-			distance_vector[5].push_back(vector_rect[obj_num]);
-	}
-	for(int obj_num = 0; obj_num < distance_vector.size(); obj_num ++)
-	{
-		if(distance_vector[obj_num].size() != 0)
-		{
-			cout << "select obj_num : "<< obj_num << endl;
-			return distance_vector[obj_num];
-		    //break;
-		}
-	}
-	vector<Rect> tmp_none_rect;
-	return tmp_none_rect;
-}*/
-
 Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect) {
     double min_distance;
     static Rect prev_rect;
@@ -991,23 +769,7 @@ Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect) {
             proper_rect.push_back(vector_rect[obj_num]);
         }
     }
-    /*if(proper_rect.size() != 0)
-    {
-        for(int obj_num = 0;obj_num < proper_rect.size();obj_num ++)
-        {
-            //cout << "blueblue" <<endl;
-            if(max_area > proper_rect[obj_num].area())
-            {
-                max_area = proper_rect[obj_num].area();
-                tmp_point = Point(proper_rect[obj_num].x + proper_rect[obj_num].width/2.0,proper_rect[obj_num].y + proper_rect[obj_num].height/2.0);
-                tmp_index = obj_num;
-            }
-        }
-        prev_point = tmp_point;
-        first_select_flags = true;
-        rectangle(src_image,proper_rect[tmp_index],Scalar(255,0,255),2,8);
-        return tmp_point;
-    }*/
+
     if (!first_select_flags) {
         for (int obj_num = 0; obj_num < vector_rect.size(); obj_num++) {
             //cout << "balabala" << endl;
@@ -1045,11 +807,6 @@ Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect) {
                 min_area = vector_rect[obj_num].area();
                 min_index = obj_num;
             }
-            /*if(min_distance > distance[obj_num])
-            {
-                min_distance = distance[obj_num];
-                min_index = obj_num;
-            }*/
         }
         min_distance = sqrt(pow(prev_point.x - vector_rect[min_index].x - vector_rect[min_index].width / 2.0, 2) +
                             pow(prev_point.y - vector_rect[min_index].y - vector_rect[min_index].height / 2.0, 2));
@@ -1210,23 +967,7 @@ Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect, int &re
             proper_rect.push_back(vector_rect[obj_num]);
         }
     }
-    /*if(proper_rect.size() != 0)
-    {
-        for(int obj_num = 0;obj_num < proper_rect.size();obj_num ++)
-        {
-            //cout << "blueblue" <<endl;
-            if(max_area > proper_rect[obj_num].area())
-            {
-                max_area = proper_rect[obj_num].area();
-                tmp_point = Point(proper_rect[obj_num].x + proper_rect[obj_num].width/2.0,proper_rect[obj_num].y + proper_rect[obj_num].height/2.0);
-                tmp_index = obj_num;
-            }
-        }
-        prev_point = tmp_point;
-        first_select_flags = true;
-        rectangle(src_image,proper_rect[tmp_index],Scalar(255,0,255),2,8);
-        return tmp_point;
-    }*/
+
     if (!first_select_flags) {
         for (int obj_num = 0; obj_num < vector_rect.size(); obj_num++) {
             //cout << "balabala" << endl;
@@ -1269,11 +1010,7 @@ Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect, int &re
                 min_area = vector_rect[obj_num].area();
                 min_index = obj_num;
             }
-            /*if(min_distance > distance[obj_num])
-            {
-                min_distance = distance[obj_num];
-                min_index = obj_num;
-            }*/
+
         }
         min_distance = sqrt(pow(prev_point.x - vector_rect[min_index].x - vector_rect[min_index].width / 2.0, 2) +
                             pow(prev_point.y - vector_rect[min_index].y - vector_rect[min_index].height / 2.0, 2));
@@ -1287,23 +1024,7 @@ Point armour::select_the_rect(Mat &src_image, vector<Rect> &vector_rect, int &re
         cout << "distance : "
              << sqrt(pow(prev_point.x - vector_rect[min_index].x - vector_rect[min_index].width / 2.0, 2) +
                      pow(prev_point.y - vector_rect[min_index].y - vector_rect[min_index].height / 2.0, 2)) << endl;
-        //display("debug" , src_image);
-        //waitKey();
-/*        if(min_distance > 300)
-		{
-			distance_times ++;
-            if(distance_times> 2 )
-			{
-				distance_times = 0;
-				prev_point = Point(vector_rect[min_index].x +vector_rect[min_index].width / 2.0,vector_rect[min_index].y + vector_rect[min_index].height/2.0);
-				prev_rect = vector_rect[min_index];
-			}
-			distance_single = CalculateZ(0,prev_rect.height,60,focus_global);
-			//distance_single = CalculateZ(prev_rect);
-			return_area = prev_rect.area();
-			return_rect = prev_rect;
-			return prev_point;
-        }*/
+
         distance_times = 0;
         //	cout << "debug" << endl;
         //double min_distance =  sqrt(pow(prev_point.x - vector_rect[min_index].x - vector_rect[min_index].width / 2.0,2) + pow(prev_point.y - vector_rect[min_index].y - vector_rect[min_index].height/2.0,2));
@@ -1458,7 +1179,7 @@ static void *get_fram_thread(void *arg) {
     }
 
     V4l2Capture *cap_thread = V4l2Capture::create(param);
-    //TODO 需要经过验证
+
     int thread_flags = 0;
     while (1) {
         if (true == process_finish && thread_flags != 0) {
@@ -1517,7 +1238,7 @@ int main() {
     //sem_init(&sem_vedio,0,1);
 
     //! 重构
-    if (serialInit() == false){
+    if (serialInit() == false) {
         cout << "serial init fail" << endl;
 //        return 0;
     }
@@ -1526,30 +1247,12 @@ int main() {
         cout << "read_fail" << endl;
     }
     ret = pthread_create(&Send_Uart, NULL, serialSend, NULL);
-    ret = pthread_create(&led_thread,NULL, led_on_thread, NULL);
+    ret = pthread_create(&led_thread, NULL, led_on_thread, NULL);
     if (ret != 0) {
         std::cout << "led_fail" << std::endl;
     }
     Mat src_image(Size(640, 480), CV_8UC3);
 
-    /*if (INIT_UART() == -1) {
-        std::cout << "open file!" << std::endl;
-        //return 0;
-    }
-    ret = pthread_create(&Read_Uart, NULL, thread_read, NULL);
-    if (ret != 0) {
-        std::cout << "read_fail" << std::endl;
-        //return 0;
-    }
-    ret = pthread_create(&Send_Uart, NULL, thread_write, NULL);
-    if (ret != 0) {
-        std::cout << "send_fail" << std::endl;
-    }
-//	ret = pthread_create(&led_thread,NULL,led_on_thread,NULL);
-    if (ret != 0) {
-        std::cout << "led_fail" << std::endl;
-    }
-    Mat src_image(Size(640, 480), CV_8UC3);*/
 #ifdef thread_lauch
     ret = pthread_create(&get_fram,NULL,get_fram_thread,(void *)&src_image);
     if(ret != 0)
@@ -1560,36 +1263,12 @@ int main() {
 #else
     VideoCapture cap;//  int USB_Camara_serial = get_usb_camara_serial(BIG_OR_SMALL);
     cap.open(1);
-    //cap.set(CV_CAP_PROP_AUTO_EXPOSURE,0.25);
 
-
-    //cvGetCaptureProperty(&cap,CV_CAP_PROP_EXPOSURE);
-    //cout << "exp:" << cap.set(CV_CAP_PROP_EXPOSURE,1) << endl;
-    /*V4L2Capture * cap_thread;
-    int serial_camera = get_usb_camara_serial(BIG_OR_SMALL);
-    if(serial_camera == 0)
-        cap_thread  =  set_v4l("/dev/video0");
-    else if(serial_camera == 1)
-        cap_thread = set_v4l("/dev/video1");
-    else
-        cap_thread  =  set_v4l("/dev/video0"); */
 #endif
     armour auto_beat(0);
-    //buff_wu
-    //Ligth buf_w("buf");
-//	Detect_obj buf;
-    //endif
+
     bool first_flags = false;
-    //int val_min = 0;
-    //int val_max = 0;
-    //int h_min,h_max,s_min,s_max,v_min,v_max;
-    //namedWindow("image show", 1);
-    //createTrackbar("h_min", "image show", &val_min, 255, mytrackBarCallback, &h_min);
-    //createTrackbar("h_max", "image show", &val_max, 255, mytrackBarCallback, &h_max);
-    //createTrackbar("s_min", "image show", &val_min, 255, mytrackBarCallback, &s_min);
-    //createTrackbar("s_max", "image show", &val_max, 255, mytrackBarCallback, &s_max);
-    //createTrackbar("v_min", "image show", &val_min, 255, mytrackBarCallback, &v_min);
-    //createTrackbar("v_max", "image show", &val_max, 255, mytrackBarCallback, &v_max);
+
     while (true) {
 
         //double cost_time = get_sys_time();
@@ -1607,27 +1286,12 @@ int main() {
         while(process_finish);
 #else
 
-        //src_image = VideoCapture_v4l(cap_thread);
-        //double cost_time = get_sys_time();
+
         auto_beat.cost_time = get_sys_time();
         cap >> src_image;
-        //Mat HSV_to_gray(const Mat & src_image,int mode,int &h_min,int &h_max ,int &s_min,int &s_max ,int &v_min ,int &v_max )
-        //Mat dst_image = HSV_to_gray(src_image,h_min,h_max,s_min,s_max,v_min,v_max);
-        //cout << "h_max:" << h_max << endl;
-        //cost_time = (get_sys_time() - cost_time) / getTickFrequency();
-        //cout << "fps:" << 1./cost_time << endl;
-        //continue;
-        //imshow("image",src_image);
-        //waitKey();
 
-        //imshow("image show",dst_image);
-        //waitKey(5);
-        //continue;
 #endif
-        // display("debug",src_image);
-        // MOD_B_R = 1;
-        //cout << "src read" << endl;
-        //display("src",src_image);
+
         if (src_image.data == NULL) {
             cout << "wrong read_data" << endl;
         }
@@ -1644,14 +1308,9 @@ int main() {
 
             Rect buf_out_rect;
             double never_used_weights = 0;
-            //cap >> src_image;
-            //if(src_image.data == NULL) cout << "wrong" << endl;
-            //imshow("debug",src_image);
-            //cap.release();
+
             Point2f buf_out_point;
-            //buf_w.Dafu_Out(src_image,false,buf_out_rect,never_used_weights,buf_out_point);
-            //	display("bufWu_Pic",src_image);
-            //	cout << "debug .. " << endl;
+
             cout << "buf_point (" << buf_out_point.x << "," << buf_out_point.y << ")" << endl;
             vector<double> angle_vector = Calculate_angle_buf(Point(0, 0),
                                                               Point(buf_out_point.x - 320, buf_out_point.y - 240),
@@ -1671,9 +1330,7 @@ int main() {
         }
 
     }
-    //cap_thread->stopCapture();
-    //cout <<cap_thread->freeBuffers();
-    //cout <<cap_thread->closeDevice();
+
     pthread_join(get_fram, NULL);
     pthread_join(Read_Uart, NULL);
     printf("main 2\r\n");
@@ -1690,9 +1347,7 @@ vector<Rect> armour::judge_contour(Mat src_image, const vector<Rect> &rect_vecto
     cout << "size : " << rect_vector.size() << endl;
     //cvtColor(src_image,src_image,CV_BGR2GRAY);
     for (int obj_num = 0; obj_num < rect_vector.size(); obj_num++) {
-        //cout << "src_size: " << src_image.rows << "src_height : "<< src_image.cols << endl;
-        //cout << "rect_vector.width" << rect_vector[obj_num].x  << "," << rect_vector[obj_num].width+rect_vector[obj_num].x << endl;
-        //cout << "rect_vector.height:" << rect_vector[obj_num].y << "," << rect_vector[obj_num].height + rect_vector[obj_num].y << endl;
+
         if (rect_vector[obj_num].height == 0) {
             //cout << "wrong" << endl;
             //exit( -1 );
@@ -1721,14 +1376,7 @@ vector<Rect> armour::judge_contour(Mat src_image, const vector<Rect> &rect_vecto
     double ave = (double) count_contour / (rect_vector.size() - circle_num);
     cout << "ave : " << ave << endl;
     cout << "size : " << rect_vector.size() << endl;
-    /*double tmp_stddev = 0;
-    for(int obj_num = 0;obj_num < contour_num_vector.size();obj_num++)
-    {
-        tmp_stddev += pow(contour_num_vector[obj_num] - ave,2);
-    }
-    double stddev = sqrt(tmp_stddev/(contour_num_vector.size()));
-    double normal = stddev + ave;
-    //if(contour_vector.size() > 4) return false;*/
+
     vector<Rect> dst_vector_rect;
     for (int obj_num = 0; obj_num < contour_num_vector.size(); obj_num++) {
         if (contour_num_vector[obj_num] <= 1.0 * ave) {
@@ -1842,19 +1490,7 @@ void armour::fire(Mat &src_image) {
     //double no_target_label=0;
     double prev_distance = 0;
     AntiKalman::KalmanFilter kf(320, 240);
-    //pthread_create(&collect_thread,NULL,collect_pic_thread,(void *)this);
-    //waitKey(100);
-    /*int src_exist_num = 0;
-    int dst_exist_num = 0;
-    int gray_exist_num = 0;*/
-    //write_pic:
-    //int src_exist_num = return_the_exsit_num(video_path);
-    /*int dst_exist_num = return_the_exsit_num(dst_data_dir);
-    int gray_exist_num = return_the_exsit_num(gray_data_dir);*/
-    //string video_full_path = change_int_into_path_jpg(video_path,src_exist_num);
-    //VideoWriter writer;
-    //writer.open(video_full_path,CV_FOURCC('M','J','P','G'),40,Size(640,480),true);
-    //file_stream.open("./record.txt",ios::out);
+
     vector<double> angle_vector;
     vector<Point> test;
     Rect Roi_rect;
@@ -1944,7 +1580,8 @@ void armour::fire(Mat &src_image) {
                                                                          send_point.x + select_rect.width / 2.0 - 320),
                                                                    distance_single * 10);
         vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
-                                                                    Point(send_point.x + select_rect.width / 2.0 - 320, 0),
+                                                                    Point(send_point.x + select_rect.width / 2.0 - 320,
+                                                                          0),
                                                                     distance_single * 10);
         cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
 
@@ -1964,13 +1601,13 @@ void armour::fire(Mat &src_image) {
 
         vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
                                                                                 target_point_kalman.y - 240),
-                                                                                distance_single);
+                                                             distance_single);
         cout << "x_angle: " << angle_vector[0] << endl;
         cout << "PH_angle: " << angle_vector[1] << endl;
         cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
 
         //! DEBUG 图像
-        display("display",src_image);
+        display("display", src_image);
         system("clear");
     }
 

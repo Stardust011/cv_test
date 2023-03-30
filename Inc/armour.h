@@ -76,7 +76,6 @@ public:
     void Port_armour();
 
     vector<vector<Point> > get_point_contours(const Mat &);//3
-    Mat erode_pic(const Mat &, int);
 
     Mat dilate_pic(const Mat &, int);
 
@@ -98,10 +97,6 @@ public:
     Point select_the_rect_area(Mat &, const vector<Rect> &);
 
     Mat rect_the_pic(const Mat &, Mat &, vector<Rect> &);
-
-    Mat rgb_to_gray(const Mat &, int, int, int, int, int, int, int);
-
-    Mat YUV_to_gray(const Mat &, int, int, int, int, int, int, int);
 
     Mat HSV_to_gray(const Mat &, int, int, int, int, int, int, int);
 

@@ -27,6 +27,7 @@ struct pos_data {
     int32_t y;
     int32_t z;
     int32_t time_interval;
+
     pos_data() {
         x = 0;
         y = 0;
@@ -36,7 +37,7 @@ struct pos_data {
 };
 
 struct serialData {
-    unsigned char head[2] {0xAA, 0xAF};
+    unsigned char head[2]{0xAA, 0xAF};
     unsigned char cmd{0x01};
     unsigned char length{0x18};
     pos_data data;
@@ -48,11 +49,17 @@ class serial {
 };
 
 bool serialInit();
+
 void serialPosData(int32_t x, int32_t y, int32_t z, int32_t time_interval);
-void serialPosData(pos_data* data);
+
+void serialPosData(pos_data *data);
+
 void setDataCmd(int cmd);
+
 void serialClose();
-void * serialRead(void *pVoid);
-void * serialSend(void *pVoid);
+
+void *serialRead(void *pVoid);
+
+void *serialSend(void *pVoid);
 
 #endif //CV_TEST_SERIAL_H
