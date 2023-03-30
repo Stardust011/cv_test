@@ -40,12 +40,17 @@ int main() {
     serialData serialData1;
     int i;
     pos_data data1;
-    data1.x = 1;
-    data1.y = 6;
+    data1.x = 15565656;
+    data1.y = 698;
     data1.z = 4;
     data1.time_interval = 9;
     serialData1.data = data1;
     cout.setf(ios::hex);
+    union crc16 crc_data{};
+    crc_data.crc = crc16((unsigned char*)&serialData1, sizeof(serialData1)-4);
+    serialData1.crc[0] = crc_data.crc_char[0];
+    serialData1.crc[1] = crc_data.crc_char[1];
+
     for(i=0;i<sizeof(serialData1);i++){
         printf("%#x ",((char*)&serialData1)[i]);
 //        cout<<oct<<i<<dec<<i<<hex<<i<<endl;
