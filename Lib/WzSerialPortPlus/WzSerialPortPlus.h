@@ -1,3 +1,6 @@
+//
+// Created by Stardust on 2023/3/25.
+//
 /**
  * @file WzSerialPortPlus.h
  * @author ouyangwei
@@ -15,12 +18,13 @@
 #include <thread>
 #include <functional>
 
-using ReceiveCallback = std::function<void (char*,int)>;
+using ReceiveCallback = std::function<void (char*, int)>;
 
 class WzSerialPortPlus
 {
 public:
     WzSerialPortPlus();
+
     /**
      * @param name: serialport name , such as: /dev/ttyS1
      * @param baudrate: baud rate , valid: 2400,4800,9600,19200,38400,57600,115200,230400
@@ -33,6 +37,7 @@ public:
                      const int& stopbit,
                      const int& databit,
                      const int& paritybit);
+
     ~WzSerialPortPlus();
 
     bool open();

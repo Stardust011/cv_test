@@ -28,8 +28,7 @@ using namespace cv;
 
 #endif
 
-//#include "new_uart_thread_init.h"
-#include "serial.h"
+#include "new_uart_thread_init.h"
 #include "led.h"
 #include "kalman.h"
 #include "BufWu.h"

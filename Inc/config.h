@@ -12,7 +12,5 @@
 #define IMAGE_WIDTH 3264
 #define IMAGE_HEIGHT 2448
 #define FPS 30
-#define SERIAL_PORT "/dev/ttyUSB0"
-#define SERIAL_BAUDRATE 115200
 
 #endif //CV_TEST_CONFIG_H

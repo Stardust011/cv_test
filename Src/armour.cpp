@@ -1,5 +1,5 @@
 #include "armour.h"
-// serialPosData
+// send_message_AR
 /*
  * this code was backup in 2019.07.06
  * author: Mr.Monster
@@ -398,9 +398,9 @@ vector<vector<Point>> armour::get_point_contours(const Mat &src_image)//3
 {
     vector<vector<Point>> contour_vector;
     vector<Vec4i> contour_hierachy;
-//    cout << "hello1 " << endl;
+    cout << "hello1 " << endl;
     findContours(src_image, contour_vector, contour_hierachy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
-//    cout << "hello2" << endl;
+    cout << "hello2" << endl;
     //cout << "contour_vector size:" << contour_vector.size() << endl;
     return contour_vector;
 }
@@ -1405,6 +1405,40 @@ int armour::return_the_exsit_num(string folder) {
     return file_names.size();
 }
 
+/*int main()
+{
+	pthread_t Read_Uart;
+	pthread_t Send_Uart;
+	int ret;
+	
+	//sem_init(&sem_main,0,0);//	busy
+	//sem_init(&sem_vedio,0,1);
+	if (INIT_UART() == -1)
+	{
+		std::cout<<"open file!"<<std::endl;
+		//return 0;
+	}
+	ret = pthread_create(&Read_Uart, NULL, thread_read, NULL);
+	if(ret !=  0)
+	{
+		std::cout<< "read_fail"<<std::endl;
+		//return 0;
+	}
+	ret = pthread_create(&Send_Uart,NULL,thread_write,NULL);
+	if(ret!=0)
+	{
+		std::cout << "send_fail"<<std::endl;
+	}
+	armour auto_beat(0);
+	auto_beat.fire();
+	pthread_join(Read_Uart, NULL);  
+	printf("main 2\r\n");   
+	pthread_join(Send_Uart, NULL);  
+	printf("main 3\r\n"); 
+	return 0;
+}*/
+
+
 static void *get_fram_thread_1(void *arg) {
     Mat *src_image = (Mat *) arg;
     VideoCapture cap_thread(0);
@@ -1442,6 +1476,56 @@ static void *get_fram_thread_1(void *arg) {
         thread_flags++;
     }
 }
+
+
+//static void *get_fram_thread_test(void *arg) {
+//    Mat *src_image = (Mat *) arg;
+//    vector <Mat> pic_array_thread;
+//
+//    int serial_camera = get_usb_camara_serial(BIG_OR_SMALL);
+//    if (serial_camera == 0)
+////        cap_thread = set_v4l("/dev/video0");
+//        V4L2DeviceParameters cap_thread("/dev/video0", V4L2_PIX_FMT_MJPEG , IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
+//    else if (serial_camera == 1)
+//        V4L2DeviceParameters cap_thread("/dev/video1", V4L2_PIX_FMT_MJPEG , IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
+//    else
+//        V4L2DeviceParameters cap_thread("/dev/video0", V4L2_PIX_FMT_MJPEG , IMAGE_WIDTH, IMAGE_HEIGHT, FPS);
+//
+//    int thread_flags = 0;
+//
+//    while (1) {
+//        if (true == process_finish && thread_flags != 0) {
+//            /*if(NULL == pic_array_thread.back().data)
+//            {
+//                 cap >> *src_image;
+//                 process_finish = false;
+//            }*/
+//            pic_array_thread.back().copyTo(*src_image);
+//            pic_array_thread.clear();
+//            process_finish = false;
+//        }
+//        if (true == thread_lauch_first) {
+//            Mat fram;
+//            fram = VideoCapture_v4l(cap_thread);
+//            fram.copyTo(*src_image);
+//            thread_lauch_first = false;
+//            continue;
+//        }
+//        Mat fram_temp;
+//        fram_temp = VideoCapture_v4l(cap_thread);
+//        // VideoPlayer(fram);
+//        if (fram_temp.data == NULL) {
+//            cout << "fram can't access" << endl;
+//            exit(-1);
+//        }
+//        pic_array_thread.push_back(fram_temp);
+//        thread_flags++;
+//    }
+//    cap_thread->stopCapture();
+//    cap_thread->freeBuffers();
+//    cap_thread->closeDevice();
+//}
+
 
 static void *get_fram_thread(void *arg) {
     Mat *src_image = (Mat *) arg;
@@ -1501,38 +1585,20 @@ static void *get_fram_thread(void *arg) {
 }
 
 int main() {
-    //init the thread
     pthread_t Read_Uart;
     pthread_t Send_Uart;
     pthread_t led_thread;
     pthread_t get_fram;
     int ret;
 
-    //init the sem
+
     sem_init(&finish_sem, 0, 0);//init the signal
     sem_init(&first_sem, 0, 1);
 
     //usleep(1000*10000);
     //sem_init(&sem_main,0,0);//	busy
     //sem_init(&sem_vedio,0,1);
-
-    //! 重构
-    if (serialInit() == false){
-        cout << "serial init fail" << endl;
-//        return 0;
-    }
-    ret = pthread_create(&Read_Uart, NULL, serialRead, NULL);
-    if (ret != 0) {
-        cout << "read_fail" << endl;
-    }
-    ret = pthread_create(&Send_Uart, NULL, serialSend, NULL);
-    ret = pthread_create(&led_thread,NULL, led_on_thread, NULL);
-    if (ret != 0) {
-        std::cout << "led_fail" << std::endl;
-    }
-    Mat src_image(Size(640, 480), CV_8UC3);
-
-    /*if (INIT_UART() == -1) {
+    if (INIT_UART() == -1) {
         std::cout << "open file!" << std::endl;
         //return 0;
     }
@@ -1549,7 +1615,7 @@ int main() {
     if (ret != 0) {
         std::cout << "led_fail" << std::endl;
     }
-    Mat src_image(Size(640, 480), CV_8UC3);*/
+    Mat src_image(Size(640, 480), CV_8UC3);
 #ifdef thread_lauch
     ret = pthread_create(&get_fram,NULL,get_fram_thread,(void *)&src_image);
     if(ret != 0)
@@ -1631,15 +1697,10 @@ int main() {
         if (src_image.data == NULL) {
             cout << "wrong read_data" << endl;
         }
-
-        //装甲板
         if (MOD_B_R != 3) {
             cout << "auto beat" << endl;
-            //串口数据在fire中发送
             auto_beat.fire(src_image);
         }
-
-        //能量机关？
         if (MOD_B_R == 3) {
 
             Rect buf_out_rect;
@@ -1657,18 +1718,46 @@ int main() {
                                                               Point(buf_out_point.x - 320, buf_out_point.y - 240),
                                                               800.0);
             if (ERROR_POINT_BUF == buf_out_point) {
-                //serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0, 0);
-                serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0);
-                setDataCmd(0);
+                send_message_AR(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0, 0);
                 //	cout << "debug ... " << endl;
             }
             cout << "yaw :" << angle_vector[0] << " , ph:" << angle_vector[1] << endl;
             //	std::cout << "enter big buf mode" << std::endl;
-            //serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0, 1);
-            serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0);
-            setDataCmd(1);
+            send_message_AR(angle_vector[0] * 1000, angle_vector[1] * 1000, 1, 0, 1);
             cout << "debug ..." << endl;
         }
+        /*	if(MOD_B_R == 3)
+            {
+            //	display("src",src_image);
+                Rect buf_out_rect ;
+                double never_used_weights = 0;
+                double img_l=0,real_l=0;
+                //cap >> src_image;
+                //if(src_image.data == NULL) cout << "wrong" << endl;
+                //imshow("debug",src_image);
+                //cap.release();
+                Point2f buf_out_point;
+                buf_out_point=buf.Detect_Mainfunction(src_image,img_l,real_l,false);
+            //	imshow("src_image", src_image);
+                waitKey(10);
+            //	display("bufWu_Pic",src_image);
+            //	cout << "debug .. " << endl;
+                cout << "buf_point (" << buf_out_point.x << "," << buf_out_point.y << ")" << endl;
+                vector<double> angle_vector = Calculate_angle_buf(Point(0,0),Point(buf_out_point.x - 320,buf_out_point.y - 240),80.0);
+                if(ERROR_POINT_BUF == buf_out_point)
+                {
+                    send_message_AR(angle_vector[0] * 1000,angle_vector[1] * 1000,1,0,0);
+                //	cout << "debug ... " << endl;
+                    cout << "never find target" << endl;
+                    continue;
+                }
+                cout << "yaw :" << angle_vector[0] << " , ph:" << angle_vector[1] << endl;
+            //	std::cout << "enter big buf mode" << std::endl;
+                send_message_AR(angle_vector[0] * 1000,angle_vector[1] * 1000,1,0,1);
+                cout << "debug ..." << endl;
+            }*/
+
+
 
     }
     //cap_thread->stopCapture();
@@ -1902,9 +1991,7 @@ void armour::fire(Mat &src_image) {
                   Scalar(0, 255, 255), 2, 8);
         circle(result_pic, send_point, 2, Scalar(255, 0, 255), 2, 8);
         cost_time = (get_sys_time() - cost_time) / getTickFrequency();
-
-        //! 输出
-//        display("display" , result_pic);
+        //display("display" , result_pic);
         cout << "fps:" << 1. / cost_time << endl;
         //index_cap.open(0);
         if (send_point == ERROR_POINT) {
@@ -1912,14 +1999,12 @@ void armour::fire(Mat &src_image) {
             kf.ResetKalmanFilter(320, 240);
             {
                 cout << "x:" << 0 << " y:" << 0 << endl;
-                serialPosData(0, 0, distance_single, cost_time);
-                setDataCmd(1);
+                send_message_AR(0, 0, distance_single, cost_time, 1);
             }
             test.push_back(Point(320, 240));
-            system("clear");
             return;
         }
-//        cout << "distance is : " << distance_single << endl;
+        cout << "distance is : " << distance_single << endl;
         distance_single = pnp_Get_Distance_armour(select_rect);
         target_flags = true;
         cout << "distance : " << distance_single << endl;
@@ -1936,7 +2021,6 @@ void armour::fire(Mat &src_image) {
         prev_distance = distance_single;
         prev_point_fire = send_point;
 
-        //验证角度
         angle_vector = Calculate_angle(Point(50, 0), Point(send_point.x - 320, send_point.y - 240),
                                        distance_single * 10);
         vector<double> angle_vector_predict_left = Calculate_angle(Point(50, 0),
@@ -1944,8 +2028,8 @@ void armour::fire(Mat &src_image) {
                                                                          send_point.x + select_rect.width / 2.0 - 320),
                                                                    distance_single * 10);
         vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
-                                                                    Point(send_point.x + select_rect.width / 2.0 - 320, 0),
-                                                                    distance_single * 10);
+                                                                    Point(send_point.x + select_rect.width / 2.0 - 320,
+                                                                          0), distance_single * 10);
         cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
 
 
@@ -1958,20 +2042,19 @@ void armour::fire(Mat &src_image) {
             cout << "yaw :" << angle_vector[0] << endl;
             angle_vector[0] = -2.0;
         }
-        serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000,
-                      angle_vector_predict_right[0] * 1000);
-        setDataCmd(1);
+        send_message_AR(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000,
+                        angle_vector_predict_right[0] * 1000, 1);
 
         vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
                                                                                 target_point_kalman.y - 240),
-                                                                                distance_single);
+                                                             distance_single);
         cout << "x_angle: " << angle_vector[0] << endl;
         cout << "PH_angle: " << angle_vector[1] << endl;
         cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
 
-        //! DEBUG 图像
-        display("display",src_image);
-        system("clear");
     }
 
+    return;
 }
+
+

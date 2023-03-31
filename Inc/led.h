@@ -8,11 +8,10 @@
 #include <linux/fs.h>                 //ÓëÉè±žÇý¶¯³ÌÐòÓÐ¹Ø
 #include <fcntl.h>                    //žÄ±äÒÑŽò¿ªµÄÎÄŒþÐÔÖÊ
 #include <cstring>
-#include <termios.h>
+#include <termios.h>                  //²ÎÊýÉèÖÃ
 #include <cerrno>
 #include <iostream>
-//#include "new_uart_thread_init.h"
-#include "serial.h"
+#include "new_uart_thread_init.h"
 
 using namespace std;
 
