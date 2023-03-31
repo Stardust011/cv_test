@@ -53,7 +53,6 @@ enum MODE_FLAG {
     MODE_NONE = 0,
     MODE_RED = 1,
     MODE_BLUE = 2
-
 };
 
 struct combine_rect_height {
@@ -62,6 +61,8 @@ struct combine_rect_height {
 };
 
 extern int CMD_COLOR;
+
+static pos_data data_send;
 
 class armour {
 public:
@@ -104,6 +105,8 @@ public:
     Mat YUV_to_gray(const Mat &, int, int, int, int, int, int, int);
 
     Mat HSV_to_gray(const Mat &, int, int, int, int, int, int, int);
+
+    auto judgeColor(const Mat &src_image);
 
     void fire(Mat &);
 

@@ -15,4 +15,7 @@
 #define SERIAL_PORT "/dev/ttyUSB0"
 #define SERIAL_BAUDRATE 115200
 
+// 1: red, 2: blue
+#define BEAT_COLOR 1
+
 #endif //CV_TEST_CONFIG_H

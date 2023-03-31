@@ -91,8 +91,8 @@ double pnp_Get_Distance_armour(Rect &roi) {
     Rodrigues(rvec, rotationMatrix);
     realistic_distance = tvec.at<double>(2, 0) * 2.0;
     im_real_weights = (double) real_distance_height / roi.height;
-    cout << "im_real_weights : " << im_real_weights << endl;
-    cout << "pnp distance is:" << realistic_distance << endl;
+//    cout << "im_real_weights : " << im_real_weights << endl;
+//    cout << "pnp distance is:" << realistic_distance << endl;
     return realistic_distance;
 }
 
@@ -377,6 +377,44 @@ Mat armour::rgb_to_gray(const Mat &src_image, int Mode, int R_min = 0, int R_max
 
     }
     return result_pic;
+}
+
+//TODO 判断颜色
+auto armour::judgeColor(const Mat &src_image) {
+    // 转换为Lab颜色空间
+    Mat lab;
+    cvtColor(src_image, lab, COLOR_BGR2Lab);
+
+    // 分离L、a、b通道
+    vector<cv::Mat> channels;
+    split(lab, channels);
+
+    // 计算直方图
+    int histSize[] = {256};
+    float lRanges[] = {0, 256};
+    const float *ranges[] = {lRanges};
+    cv::MatND hist;
+    cv::calcHist(&channels[0], 1, 0, cv::Mat(), hist, 1, histSize, ranges, true, false);
+
+    // 找到最大值
+    double maxVal = 0;
+    int maxIdx = 0;
+    for (int i = 0; i < histSize[0]; i++) {
+        double val = hist.at<float>(i);
+        if (val > maxVal) {
+            maxVal = val;
+            maxIdx = i;
+        }
+    }
+
+    // 判断颜色
+    if (maxIdx >= 165 && maxIdx <= 255) {
+        return RED;
+    } else if (maxIdx >= 0 && maxIdx <= 95) {
+        return BLUE;
+    } else {
+        return NONE;
+    }
 }
 
 Mat armour::erode_pic(const Mat &src_image, int size_element = 1) {
@@ -1458,7 +1496,7 @@ static void *get_fram_thread(void *arg) {
     }
 
     V4l2Capture *cap_thread = V4l2Capture::create(param);
-    //TODO 需要经过验证
+
     int thread_flags = 0;
     while (1) {
         if (true == process_finish && thread_flags != 0) {
@@ -1611,6 +1649,7 @@ int main() {
         //double cost_time = get_sys_time();
         auto_beat.cost_time = get_sys_time();
         cap >> src_image;
+
         //Mat HSV_to_gray(const Mat & src_image,int mode,int &h_min,int &h_max ,int &s_min,int &s_max ,int &v_min ,int &v_max )
         //Mat dst_image = HSV_to_gray(src_image,h_min,h_max,s_min,s_max,v_min,v_max);
         //cout << "h_max:" << h_max << endl;
@@ -1818,7 +1857,6 @@ void create_test_vector(vector<Point> &test) {
     }
 }
 
-
 void armour::select_rect_by_angle(const Rect &select_rect, vector<double> &angle_vector, double distance) {
     double y_angle = angle_vector[1];
     if (fabs(angle_vector[0]) < 1.0);
@@ -1836,7 +1874,6 @@ void armour::fire(Mat &src_image) {
     //int notarget_lable=0;
     static Point prev_point_fire = Point(0, 0);
     this->collect_flags = false;
-    int mode;
     ofstream file_stream;
     //AntiKalman::KalmanFilter kf(0,0);
     //double no_target_label=0;
@@ -1860,21 +1897,18 @@ void armour::fire(Mat &src_image) {
     Rect Roi_rect;
     //while (MOD_B_R != 3)
     {
-        mode = MODE_BLUE;
-
+//      mode = MODE_BLUE;
         Roi_rect = get_new_roi_rect(target_flags);
         src_image = src_image(Roi_rect);
         if (!src_image.data) {
             cout << "read data failed .. " << endl;
             exit(-1);
         }
-        Mat gray_image = HSV_to_gray(src_image, mode);
+        Mat gray_image = HSV_to_gray(src_image, BEAT_COLOR);
         //gray_image = erode_pic(gray_image, 1);
-        if (mode == MODE_BLUE)
-            gray_image = dilate_pic(gray_image, 12);
-        else
-            gray_image = dilate_pic(gray_image, 12);
+        gray_image = dilate_pic(gray_image, 12);
         //display("gray", gray_image);
+        setDataColor(BEAT_COLOR);
 
         vector<vector<Point>> vector_Point;
         get_rect_pic_contour(gray_image, get_point_contours(gray_image), vector_Point);
@@ -1897,10 +1931,12 @@ void armour::fire(Mat &src_image) {
         Point send_point = select_the_rect(result_pic, Rect_vector, armour_area, select_rect);
 
         //	send_point = Point(send_point.x + Roi_rect.x, send_point.y + Roi_rect.y);
+
         rectangle(result_pic,
                   Rect(select_rect.x - Roi_rect.x, select_rect.y - Roi_rect.y, select_rect.width, select_rect.height),
                   Scalar(0, 255, 255), 2, 8);
-        circle(result_pic, send_point, 2, Scalar(255, 0, 255), 2, 8);
+
+//        circle(result_pic, send_point, 2, Scalar(255, 0, 255), 2, 8);
         cost_time = (get_sys_time() - cost_time) / getTickFrequency();
 
         //! 输出
@@ -1922,17 +1958,30 @@ void armour::fire(Mat &src_image) {
 //        cout << "distance is : " << distance_single << endl;
         distance_single = pnp_Get_Distance_armour(select_rect);
         target_flags = true;
-        cout << "distance : " << distance_single << endl;
-        std::cout << "x :" << send_point.x - 320 << "y:" << send_point.y - 240 << std::endl;
+        cout << "distance : " << distance_single << endl; //距离
+//        std::cout << "x :" << send_point.x - 320 << "y:" << send_point.y - 240 << std::endl;
         Point armour_target = Point(send_point.x - 320, send_point.y - 240);
         cout << "armour_target.x:" << armour_target.x << "armour_target.y:" << armour_target.y << endl;
+
+        //反 卡尔曼滤波 预测
         Point kalman_point = kf.run(armour_target.x, armour_target.y);
-        Point anti_kalman_point = kf.Anti_KalmanFilter(armour_target, kalman_point, 0.9);
+        Point anti_kalman_point = kf.Anti_KalmanFilter(armour_target, kalman_point, 0.9); //0.9为参数 可调
+
+        //转换点坐标至屏幕左上角（ROI区域）
         Point2f target_point = Point2f(armour_target.x + 320, armour_target.y + 240);
         Point2f target_point_kalman = Point2f(anti_kalman_point.x + 320, anti_kalman_point.y + 240);
+
+        //描绘装甲板中心
         circle(src_image, target_point, 3, Scalar(0, 255, 0), 2, 8);//current point with green
-        circle(src_image, target_point_kalman, 3, Scalar(255, 0, 0), 2, 8);//predicted position with red *
+        //描绘卡尔曼滤波预测点
+        circle(src_image, target_point_kalman, 3, Scalar(255, 0, 0), 2, 8);//predicted position with blue *
         test.push_back(send_point);
+
+        //传入数据
+        data_send.x = target_point.x;
+        data_send.y = target_point.y;
+        data_send.z = distance_single;
+
         prev_distance = distance_single;
         prev_point_fire = send_point;
 
@@ -1946,28 +1995,31 @@ void armour::fire(Mat &src_image) {
         vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
                                                                     Point(send_point.x + select_rect.width / 2.0 - 320, 0),
                                                                     distance_single * 10);
-        cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
-
+//        cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
 
         if (angle_vector[0] > 30.0) {
-            cout << "yaw:" << angle_vector[0] << endl;
+//            cout << "yaw:" << angle_vector[0] << endl;
             angle_vector[0] = 4.0;
             //cout << "enter "<< endl;
             //  cout << "> 40.0" << endl;
         } else if (angle_vector[0] < -6) {
-            cout << "yaw :" << angle_vector[0] << endl;
+//            cout << "yaw :" << angle_vector[0] << endl;
             angle_vector[0] = -2.0;
         }
-        serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000,
-                      angle_vector_predict_right[0] * 1000);
+
+        data_send.x_c = angle_vector[0] * 1000;
+        data_send.y_c = angle_vector[1] * 1000;
+
+        serialPosData(&data_send);
+//        serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000, angle_vector_predict_right[0] * 1000);
         setDataCmd(1);
 
-        vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
-                                                                                target_point_kalman.y - 240),
-                                                                                distance_single);
-        cout << "x_angle: " << angle_vector[0] << endl;
-        cout << "PH_angle: " << angle_vector[1] << endl;
-        cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
+//        vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
+//                                                                                target_point_kalman.y - 240),
+//                                                                                distance_single);
+//        cout << "x_angle: " << angle_vector[0] << endl;
+//        cout << "PH_angle: " << angle_vector[1] << endl;
+//        cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
 
         //! DEBUG 图像
         display("display",src_image);
