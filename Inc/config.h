@@ -13,4 +13,7 @@
 #define IMAGE_HEIGHT 2448
 #define FPS 30
 
+// 1: red, 2: blue
+#define BEAT_COLOR 1
+
 #endif //CV_TEST_CONFIG_H
