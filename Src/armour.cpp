@@ -2027,4 +2027,3 @@ void armour::fire(Mat &src_image) {
     }
 
 }
-

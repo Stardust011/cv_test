@@ -18,5 +18,4 @@
 // 1: red, 2: blue
 #define BEAT_COLOR 1
 
-
 #endif //CV_TEST_CONFIG_H
