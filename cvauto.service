@@ -1,0 +1,12 @@
+[Unit]
+Description=auto start cv_run
+After=network.target
+ConditionPathExists=!/etc/cv_run/cv_not_to_be_run
+
+[Service]
+Type=forking
+ExecStart=/etc/cv_run/start.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
