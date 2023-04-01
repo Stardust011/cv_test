@@ -58,9 +58,9 @@ add_library(WzSerialPortPlus STATIC Lib/WzSerialPortPlus/WzSerialPortPlus.cpp )
 target_include_directories(WzSerialPortPlus PUBLIC "Lib/WzSerialPortPlus")
 
 
-add_executable(cv_test ${CURRENT_HEADERS} ${CURRENT_SOURCES} ${WIN_UNIX})
-target_link_libraries(cv_test libv4l2)
-target_link_libraries(cv_test WzSerialPortPlus)
+add_executable(cv_run ${CURRENT_HEADERS} ${CURRENT_SOURCES} ${WIN_UNIX})
+target_link_libraries(cv_run libv4l2)
+target_link_libraries(cv_run WzSerialPortPlus)
 
 #---------------------TEST---------------------
 #include_directories(./)

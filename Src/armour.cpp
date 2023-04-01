@@ -156,6 +156,12 @@ void display(string window_name, const Mat &src_image) {
     waitKey(3);
 }
 
+
+//! 计算角度
+//! \param prev_point
+//! \param current_point
+//! \param focus
+//! \return
 vector<double> armour::Calculate_angle(const Point &prev_point, const Point &current_point, double focus) {
     static int run_time_count = 0;//check whether the car is moving
     double x_bias = current_point.x - prev_point.x;
@@ -168,6 +174,11 @@ vector<double> armour::Calculate_angle(const Point &prev_point, const Point &cur
     cout << "y_bias:" << y_bias << endl;
     cout << "focus :" << focus << endl;
     cout << " angle Percent: " << x_bias * im_real_weights / 100 / focus << endl;
+
+    //传出数据
+    data_send.x = x_bias * 100;
+    data_send.y = y_bias * -100;
+
     //cout << "angle check : "<< angle_vector[0] << endl;
     if (angle_vector[0] < 0 && fabs(angle_vector[0]) > limit_angle_val) {
         angle_vector[0] -= angle_x_bias;
@@ -1857,6 +1868,7 @@ void create_test_vector(vector<Point> &test) {
     }
 }
 
+
 void armour::select_rect_by_angle(const Rect &select_rect, vector<double> &angle_vector, double distance) {
     double y_angle = angle_vector[1];
     if (fabs(angle_vector[0]) < 1.0);
@@ -1977,10 +1989,8 @@ void armour::fire(Mat &src_image) {
         circle(src_image, target_point_kalman, 3, Scalar(255, 0, 0), 2, 8);//predicted position with blue *
         test.push_back(send_point);
 
-        //传入数据
-        data_send.x = target_point.x;
-        data_send.y = target_point.y;
-        data_send.z = distance_single;
+        //传出距离数据
+        data_send.z = distance_single * 10;
 
         prev_distance = distance_single;
         prev_point_fire = send_point;
@@ -1988,13 +1998,16 @@ void armour::fire(Mat &src_image) {
         //验证角度
         angle_vector = Calculate_angle(Point(50, 0), Point(send_point.x - 320, send_point.y - 240),
                                        distance_single * 10);
-        vector<double> angle_vector_predict_left = Calculate_angle(Point(50, 0),
-                                                                   Point(send_point.x - select_rect.width / 2.0 - 320,
-                                                                         send_point.x + select_rect.width / 2.0 - 320),
-                                                                   distance_single * 10);
-        vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
-                                                                    Point(send_point.x + select_rect.width / 2.0 - 320, 0),
-                                                                    distance_single * 10);
+
+        ///解除注释以使用左右灯条角度预测
+//        vector<double> angle_vector_predict_left = Calculate_angle(Point(50, 0),
+//                                                                   Point(send_point.x - select_rect.width / 2.0 - 320,
+//                                                                         send_point.x + select_rect.width / 2.0 - 320),
+//                                                                   distance_single * 10);
+//        vector<double> angle_vector_predict_right = Calculate_angle(Point(40, 0),
+//                                                                    Point(send_point.x + select_rect.width / 2.0 - 320, 0),
+//                                                                    distance_single * 10);
+
 //        cout << "angle_vector[1] : " << angle_vector[1] << " angle_vector[2]:" << angle_vector[2] << endl;
 
         if (angle_vector[0] > 30.0) {
@@ -2011,7 +2024,9 @@ void armour::fire(Mat &src_image) {
         data_send.y_c = angle_vector[1] * 1000;
 
         serialPosData(&data_send);
+        ///解除注释以使用左右灯条角度预测
 //        serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000, angle_vector_predict_right[0] * 1000);
+
         setDataCmd(1);
 
 //        vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
