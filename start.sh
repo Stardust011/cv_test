@@ -7,4 +7,4 @@ fi
 v4l2-ctl -d /dev/video1 -c exposure_auto=1
 v4l2-ctl -d /dev/video1 -c exposure_absolute=1
 
-sudo ./build/cv_run
+sudo /etc/cv_run/cv_run
