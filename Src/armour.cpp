@@ -1920,7 +1920,6 @@ void armour::fire(Mat &src_image) {
         //gray_image = erode_pic(gray_image, 1);
         gray_image = dilate_pic(gray_image, 12);
         //display("gray", gray_image);
-        setDataColor(BEAT_COLOR);
 
         vector<vector<Point>> vector_Point;
         get_rect_pic_contour(gray_image, get_point_contours(gray_image), vector_Point);
@@ -1957,6 +1956,10 @@ void armour::fire(Mat &src_image) {
         //index_cap.open(0);
         if (send_point == ERROR_POINT) {
             target_flags = false;
+            not_find_count++;
+            if (not_find_count > 80) {
+                setDataColor(0); //设置找不到
+            }
             kf.ResetKalmanFilter(320, 240);
             {
                 cout << "x:" << 0 << " y:" << 0 << endl;
@@ -1967,6 +1970,8 @@ void armour::fire(Mat &src_image) {
             system("clear");
             return;
         }
+        setDataColor(BEAT_COLOR);
+        not_find_count = 0;
 //        cout << "distance is : " << distance_single << endl;
         distance_single = pnp_Get_Distance_armour(select_rect);
         target_flags = true;

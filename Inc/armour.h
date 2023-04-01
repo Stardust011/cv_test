@@ -44,6 +44,7 @@ using namespace cv;
 #define ERROR_POINT Point(640,640)
 #define ERROR_POINT_BUF Point2f(640,640)
 
+int not_find_count = 0;
 
 bool BIG_OR_SMALL = false;
 

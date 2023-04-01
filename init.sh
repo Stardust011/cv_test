@@ -16,7 +16,7 @@ if [ test -f "$FILE" ]; then
           wget -O opencv.zip https://gitcode.net/opencv/opencv/-/archive/4.7.0/opencv-4.7.0.zip
           unzip opencv.zip
       fi
-      if [ W_CONTRIB ]; then
+      if [ $W_CONTRIB ]; then
         if [ test -f ~/opencv/opencv_contrib.zip ]; then
           wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.7.0.zip
           unzip opencv_contrib.zip
