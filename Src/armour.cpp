@@ -176,8 +176,8 @@ vector<double> armour::Calculate_angle(const Point &prev_point, const Point &cur
     cout << " angle Percent: " << x_bias * im_real_weights / 100 / focus << endl;
 
     //传出数据
-    data_send.x = x_bias * 100;
-    data_send.y = y_bias * -100;
+    data_send.x = x_bias ;
+    data_send.y = y_bias ;
 
     //cout << "angle check : "<< angle_vector[0] << endl;
     if (angle_vector[0] < 0 && fabs(angle_vector[0]) > limit_angle_val) {

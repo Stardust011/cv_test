@@ -7,4 +7,4 @@ sudo ln -s ./cvauto.service /etc/systemd/system/cvauto.service
 sudo chmod 777 /etc/systemd/system/cvauto.service
 sudo systemctl daemon-reload
 
-# sudo systemctl enable cvauto.service
+# sudo systemctl enable cvauto.service-
