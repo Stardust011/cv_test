@@ -16,6 +16,9 @@
 #define SERIAL_PORT "/dev/ttyUSB0"
 #define SERIAL_BAUDRATE 115200
 
+//id置零计数
+#define NO_FIND_COUNT 80
+
 // 1: red, 2: blue
 #define BEAT_COLOR 1
 

@@ -72,10 +72,12 @@ int get_usb_camara_serial(bool big_or_small = true, string path = "/sys/devices/
 double pnp_Get_Distance_armour(Rect &roi) {
     double realistic_distance;
     Mat rotationMatrix, tvec;;
+
+    //TODO 相机内参
     const static Mat cameraMatrix = (Mat_<double>(3, 3) << 774.461, 0, 244.3668, 0, 775.158, 233.955, 0, 0, 1);
     const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
 
-
+    //TODO 3D坐标
     vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
     realistic.push_back(cv::Point3f(0, 0.140, 0));
@@ -99,8 +101,13 @@ double pnp_Get_Distance_armour(Rect &roi) {
 double pnp_Get_Distance_buf(Rect &roi) {
     double realistic_distance;
     Mat rotationMatrix, tvec;;
-    const static Mat cameraMatrix = (Mat_<double>(3, 3) << 780.461, 0, 224.3668, 0, 781.158, 233.955, 0, 0, 1);
-    const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
+    const static Mat cameraMatrix = (Mat_<double>(3, 3) << 1704.34015038228, 0.5471231529311396, 1338.01265844131, 0, 1704.21721269650, 788.218058016293, 0, 0, 1);
+    //Matlab 转置的矩阵
+    // 1704.34015038228 , 0 ,0
+    // 0.5471231529311396, 1704.21721269650 ,0
+    // 1338.01265844131, 788.218058016293, 1
+    const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.0082, -0.0392, -0.000880161386593770 ,-0.0013 ,0.0190);
+    // 0.0082, -0.0392, -0.000880161386593770 ,-0.0013 ,0.0190
     vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
     realistic.push_back(cv::Point3f(0, 0.3, 0));
@@ -114,6 +121,7 @@ double pnp_Get_Distance_buf(Rect &roi) {
     Mat rvec(3, 1, DataType<double>::type);
     solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
     Rodrigues(rvec, rotationMatrix);
+    /// 2.0
     realistic_distance = tvec.at<double>(2, 0) / 2.0;
     cout << "distance is:" << realistic_distance << endl;
     return realistic_distance;
@@ -1579,26 +1587,11 @@ int main() {
     if (ret != 0) {
         std::cout << "led_fail" << std::endl;
     }
-    Mat src_image(Size(640, 480), CV_8UC3);
+    //妙算只能跑这个分辨率
+    Mat org_image(Size(1440, 1080), CV_8UC3); //原始分辨率
+    Mat src_image(Size(640, 480), CV_8UC3); //运算分辨率
 
-    /*if (INIT_UART() == -1) {
-        std::cout << "open file!" << std::endl;
-        //return 0;
-    }
-    ret = pthread_create(&Read_Uart, NULL, thread_read, NULL);
-    if (ret != 0) {
-        std::cout << "read_fail" << std::endl;
-        //return 0;
-    }
-    ret = pthread_create(&Send_Uart, NULL, thread_write, NULL);
-    if (ret != 0) {
-        std::cout << "send_fail" << std::endl;
-    }
-//	ret = pthread_create(&led_thread,NULL,led_on_thread,NULL);
-    if (ret != 0) {
-        std::cout << "led_fail" << std::endl;
-    }
-    Mat src_image(Size(640, 480), CV_8UC3);*/
+
 #ifdef thread_lauch
     ret = pthread_create(&get_fram,NULL,get_fram_thread,(void *)&src_image);
     if(ret != 0)
@@ -1607,6 +1600,7 @@ int main() {
         exit(-1);
     }
 #else
+    //视频信号输出
     VideoCapture cap;//  int USB_Camara_serial = get_usb_camara_serial(BIG_OR_SMALL);
     cap.open(1);
     //cap.set(CV_CAP_PROP_AUTO_EXPOSURE,0.25);
@@ -1639,9 +1633,12 @@ int main() {
     //createTrackbar("s_max", "image show", &val_max, 255, mytrackBarCallback, &s_max);
     //createTrackbar("v_min", "image show", &val_min, 255, mytrackBarCallback, &v_min);
     //createTrackbar("v_max", "image show", &val_max, 255, mytrackBarCallback, &v_max);
-    while (true) {
+
+    /// 无尽循环开始
+    for (;;) {
 
         //double cost_time = get_sys_time();
+/// 没有定义
 #ifdef thread_lauch
 
         process_finish = true;
@@ -1659,7 +1656,12 @@ int main() {
         //src_image = VideoCapture_v4l(cap_thread);
         //double cost_time = get_sys_time();
         auto_beat.cost_time = get_sys_time();
-        cap >> src_image;
+        cap >> org_image;
+        //cut image
+        Rect rect_org(400, 300, 640, 480);
+        src_image = org_image(rect_org);
+//        resize(org_image, src_image, Size(640, 480));
+//        cap >> src_image;
 
         //Mat HSV_to_gray(const Mat & src_image,int mode,int &h_min,int &h_max ,int &s_min,int &s_max ,int &v_min ,int &v_max )
         //Mat dst_image = HSV_to_gray(src_image,h_min,h_max,s_min,s_max,v_min,v_max);
@@ -1721,6 +1723,7 @@ int main() {
         }
 
     }
+    //无尽循环结束
     //cap_thread->stopCapture();
     //cout <<cap_thread->freeBuffers();
     //cout <<cap_thread->closeDevice();
@@ -1910,8 +1913,12 @@ void armour::fire(Mat &src_image) {
     //while (MOD_B_R != 3)
     {
 //      mode = MODE_BLUE;
+
+        //target_flags = false;?
         Roi_rect = get_new_roi_rect(target_flags);
+
         src_image = src_image(Roi_rect);
+
         if (!src_image.data) {
             cout << "read data failed .. " << endl;
             exit(-1);
@@ -1946,6 +1953,7 @@ void armour::fire(Mat &src_image) {
         rectangle(result_pic,
                   Rect(select_rect.x - Roi_rect.x, select_rect.y - Roi_rect.y, select_rect.width, select_rect.height),
                   Scalar(0, 255, 255), 2, 8);
+        //绘制框图
 
 //        circle(result_pic, send_point, 2, Scalar(255, 0, 255), 2, 8);
         cost_time = (get_sys_time() - cost_time) / getTickFrequency();
@@ -1957,7 +1965,7 @@ void armour::fire(Mat &src_image) {
         if (send_point == ERROR_POINT) {
             target_flags = false;
             not_find_count++;
-            if (not_find_count > 80) {
+            if (not_find_count > NO_FIND_COUNT) {
                 setDataColor(0); //设置找不到
             }
             kf.ResetKalmanFilter(320, 240);
@@ -1967,12 +1975,19 @@ void armour::fire(Mat &src_image) {
                 setDataCmd(1);
             }
             test.push_back(Point(320, 240));
-            system("clear");
+            int system_ret = system("clear");
             return;
         }
+
+        //重置计数器
         setDataColor(BEAT_COLOR);
         not_find_count = 0;
+
+
 //        cout << "distance is : " << distance_single << endl;
+        //调用PNP
+
+
         distance_single = pnp_Get_Distance_armour(select_rect);
         target_flags = true;
         cout << "distance : " << distance_single << endl; //距离
@@ -2043,7 +2058,7 @@ void armour::fire(Mat &src_image) {
 
         //! DEBUG 图像
         display("display",src_image);
-        system("clear");
+        int system_ret = system("clear");
     }
 
 }
