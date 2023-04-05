@@ -74,8 +74,13 @@ double pnp_Get_Distance_armour(Rect &roi) {
     Mat rotationMatrix, tvec;;
 
     //TODO 相机内参
-    const static Mat cameraMatrix = (Mat_<double>(3, 3) << 774.461, 0, 244.3668, 0, 775.158, 233.955, 0, 0, 1);
-    const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.09261, -2.01616, -0.0319, 0.01612, 0.00000);
+    const static Mat cameraMatrix = (Mat_<double>(3, 3) << 1704.34015038228, 0.5471231529311396, 1338.01265844131, 0, 1704.21721269650, 788.218058016293, 0, 0, 1);
+    //Matlab 转置的矩阵
+    // 1704.34015038228 , 0 ,0
+    // 0.5471231529311396, 1704.21721269650 ,0
+    // 1338.01265844131, 788.218058016293, 1
+    const static Mat distCoeffs = (Mat_<double>(1, 5) << -0.0082, -0.0392, -0.000880161386593770 ,-0.0013 ,0.0190);
+    // 0.0082, -0.0392, -0.000880161386593770 ,-0.0013 ,0.0190
 
     //TODO 3D坐标
     vector<Point3f> realistic;
@@ -91,6 +96,7 @@ double pnp_Get_Distance_armour(Rect &roi) {
     Mat rvec(3, 1, DataType<double>::type);
     solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
     Rodrigues(rvec, rotationMatrix);
+    /// 2.0
     realistic_distance = tvec.at<double>(2, 0) * 2.0;
     im_real_weights = (double) real_distance_height / roi.height;
 //    cout << "im_real_weights : " << im_real_weights << endl;
@@ -121,7 +127,7 @@ double pnp_Get_Distance_buf(Rect &roi) {
     Mat rvec(3, 1, DataType<double>::type);
     solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
     Rodrigues(rvec, rotationMatrix);
-    /// 2.0
+
     realistic_distance = tvec.at<double>(2, 0) / 2.0;
     cout << "distance is:" << realistic_distance << endl;
     return realistic_distance;
