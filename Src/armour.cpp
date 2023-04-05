@@ -1594,7 +1594,7 @@ int main() {
         std::cout << "led_fail" << std::endl;
     }
     //妙算只能跑这个分辨率
-    Mat org_image(Size(1440, 1080), CV_8UC3); //原始分辨率
+//    Mat org_image(Size(1440, 1080), CV_8UC3); //原始分辨率
     Mat src_image(Size(640, 480), CV_8UC3); //运算分辨率
 
 
@@ -1662,12 +1662,12 @@ int main() {
         //src_image = VideoCapture_v4l(cap_thread);
         //double cost_time = get_sys_time();
         auto_beat.cost_time = get_sys_time();
-        cap >> org_image;
+//        cap >> org_image;
         //cut image
-        Rect rect_org(400, 300, 640, 480);
-        src_image = org_image(rect_org);
+//        Rect rect_org(400, 300, 640, 480);
+//        src_image = org_image(rect_org);
 //        resize(org_image, src_image, Size(640, 480));
-//        cap >> src_image;
+        cap >> src_image;
 
         //Mat HSV_to_gray(const Mat & src_image,int mode,int &h_min,int &h_max ,int &s_min,int &s_max ,int &v_min ,int &v_max )
         //Mat dst_image = HSV_to_gray(src_image,h_min,h_max,s_min,s_max,v_min,v_max);
