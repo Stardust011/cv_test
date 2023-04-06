@@ -28,6 +28,14 @@ union crc16 {
     unsigned char crc_char[2];
 };
 
+struct cal_data{
+    double x;
+    double y;
+    double z;
+    double yaw;
+    double pitch;
+};
+
 struct pos_data {
     int32_t x;
     int32_t y;

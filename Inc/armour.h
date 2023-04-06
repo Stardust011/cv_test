@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <cmath>
 #include <unistd.h>
 #include <dirent.h>
 
@@ -64,6 +64,7 @@ struct combine_rect_height {
 extern int CMD_COLOR;
 
 static pos_data data_send;
+static cal_data data_cal;
 
 class armour {
 public:

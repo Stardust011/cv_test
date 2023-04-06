@@ -97,7 +97,9 @@ double pnp_Get_Distance_armour(Rect &roi) {
     solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
     Rodrigues(rvec, rotationMatrix);
     /// 2.0
-    realistic_distance = tvec.at<double>(2, 0) * 2.0;
+    realistic_distance = tvec.at<double>(2, 0);
+    data_cal.x = tvec.at<double>(0, 0);
+    data_cal.y = tvec.at<double>(1, 0);
     im_real_weights = (double) real_distance_height / roi.height;
 //    cout << "im_real_weights : " << im_real_weights << endl;
 //    cout << "pnp distance is:" << realistic_distance << endl;
@@ -1669,15 +1671,6 @@ int main() {
 //        resize(org_image, src_image, Size(640, 480));
         cap >> src_image;
 
-        //Mat HSV_to_gray(const Mat & src_image,int mode,int &h_min,int &h_max ,int &s_min,int &s_max ,int &v_min ,int &v_max )
-        //Mat dst_image = HSV_to_gray(src_image,h_min,h_max,s_min,s_max,v_min,v_max);
-        //cout << "h_max:" << h_max << endl;
-        //cost_time = (get_sys_time() - cost_time) / getTickFrequency();
-        //cout << "fps:" << 1./cost_time << endl;
-        //continue;
-        //imshow("image",src_image);
-        //waitKey();
-
         //imshow("image show",dst_image);
         //waitKey(5);
         //continue;
@@ -2016,7 +2009,8 @@ void armour::fire(Mat &src_image) {
         test.push_back(send_point);
 
         //传出距离数据
-        data_send.z = distance_single * 10;
+        data_cal.z = distance_single;
+        data_send.z = data_cal.z * 100;
 
         prev_distance = distance_single;
         prev_point_fire = send_point;
@@ -2045,9 +2039,13 @@ void armour::fire(Mat &src_image) {
 //            cout << "yaw :" << angle_vector[0] << endl;
             angle_vector[0] = -2.0;
         }
-
-        data_send.x_c = angle_vector[0] * 1000;
-        data_send.y_c = angle_vector[1] * 1000;
+        //弧度制
+        data_cal.yaw = atan(data_cal.x / data_cal.z);
+        data_cal.pitch = atan(data_cal.y / data_cal.z);
+        data_send.x_c = data_cal.yaw * 1000;
+        data_send.y_c = data_cal.pitch * 1000;
+//        data_send.x_c = angle_vector[0] * 1000;
+//        data_send.y_c = angle_vector[1] * 1000;
 
         serialPosData(&data_send);
         ///解除注释以使用左右灯条角度预测
