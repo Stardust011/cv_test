@@ -85,19 +85,20 @@ double pnp_Get_Distance_armour(Rect &roi) {
     //TODO 3D坐标
     vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
-    realistic.push_back(cv::Point3f(0, 0.140, 0));
-    realistic.push_back(cv::Point3f(0.06, 0.140, 0));
-    realistic.push_back(cv::Point3f(0.06, 0, 0));
+    realistic.push_back(cv::Point3f(0, a_width, 0));
+    realistic.push_back(cv::Point3f(a_height, a_width, 0));
+    realistic.push_back(cv::Point3f(a_height, 0, 0));
     vector<Point2f> point_get;
     point_get.push_back(Point2f(roi.x, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y + roi.height));
     point_get.push_back(Point2f(roi.x, roi.y + roi.height));
     Mat rvec(3, 1, DataType<double>::type);
-    solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
+//    solvePnP(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
+    solvePnPRansac(realistic, point_get, cameraMatrix, distCoeffs, rvec, tvec);
     Rodrigues(rvec, rotationMatrix);
     /// 2.0
-    realistic_distance = tvec.at<double>(2, 0);
+    realistic_distance = tvec.at<double>(2, 0) / 2.0;
     data_cal.x = tvec.at<double>(0, 0);
     data_cal.y = tvec.at<double>(1, 0);
     im_real_weights = (double) real_distance_height / roi.height;
@@ -119,8 +120,8 @@ double pnp_Get_Distance_buf(Rect &roi) {
     vector<Point3f> realistic;
     realistic.push_back(cv::Point3f(0, 0, 0));
     realistic.push_back(cv::Point3f(0, 0.3, 0));
-    realistic.push_back(cv::Point3f(0.2, 0.3, 0));
-    realistic.push_back(cv::Point3f(0.2, 0, 0));
+    realistic.push_back(cv::Point3f(b_height, b_width, 0));
+    realistic.push_back(cv::Point3f(b_height, b_width, 0));
     vector<Point2f> point_get;
     point_get.push_back(Point2f(roi.x, roi.y));
     point_get.push_back(Point2f(roi.x + roi.width, roi.y));
@@ -1971,10 +1972,12 @@ void armour::fire(Mat &src_image) {
             {
                 cout << "x:" << 0 << " y:" << 0 << endl;
                 serialPosData(0, 0, distance_single, cost_time);
+                data_send.x_c = 0;
+                data_send.y_c = 0;
                 setDataCmd(1);
             }
             test.push_back(Point(320, 240));
-            int system_ret = system("clear");
+//            int system_ret = system("clear");
             return;
         }
 
@@ -2002,11 +2005,11 @@ void armour::fire(Mat &src_image) {
         Point2f target_point = Point2f(armour_target.x + 320, armour_target.y + 240);
         Point2f target_point_kalman = Point2f(anti_kalman_point.x + 320, anti_kalman_point.y + 240);
 
-        //描绘装甲板中心
-        circle(src_image, target_point, 3, Scalar(0, 255, 0), 2, 8);//current point with green
-        //描绘卡尔曼滤波预测点
-        circle(src_image, target_point_kalman, 3, Scalar(255, 0, 0), 2, 8);//predicted position with blue *
-        test.push_back(send_point);
+//        //描绘装甲板中心
+//        circle(src_image, target_point, 3, Scalar(0, 255, 0), 2, 8);//current point with green
+//        //描绘卡尔曼滤波预测点
+//        circle(src_image, target_point_kalman, 3, Scalar(255, 0, 0), 2, 8);//predicted position with blue *
+//        test.push_back(send_point);
 
         //传出距离数据
         data_cal.z = distance_single;
@@ -2051,7 +2054,7 @@ void armour::fire(Mat &src_image) {
         ///解除注释以使用左右灯条角度预测
 //        serialPosData(angle_vector[0] * 1000, angle_vector[1] * 1000, angle_vector_predict_left[0] * 1000, angle_vector_predict_right[0] * 1000);
 
-        setDataCmd(1);
+        setDataCmd(BEAT_COLOR);
 
 //        vector<double> kalman_angle_vector = Calculate_angle(Point(0, 0), Point(target_point_kalman.x - 320,
 //                                                                                target_point_kalman.y - 240),
@@ -2060,9 +2063,9 @@ void armour::fire(Mat &src_image) {
 //        cout << "PH_angle: " << angle_vector[1] << endl;
 //        cout << "kalman_angle: " << kalman_angle_vector[0] << endl;
 
-        //! DEBUG 图像
-        display("display",src_image);
-        int system_ret = system("clear");
+//        //! DEBUG 图像
+//        display("display",src_image);
+//        int system_ret = system("clear");
     }
 
 }

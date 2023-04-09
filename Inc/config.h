@@ -19,6 +19,14 @@
 //id置零计数
 #define NO_FIND_COUNT 80
 
+//装甲板参数 (m)
+#define a_height 0.055
+#define a_width 0.140
+
+//大符参数 (m)
+#define b_height 0.2
+#define b_width 0.3
+
 // 1: red, 2: blue
 #define BEAT_COLOR 1
 
